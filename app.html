@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Secure Vault</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Material Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+  <style>
+    :root {
+      --primary-color: #0288D1;
+      --secondary-color: #00BCD4;
+      --background-color: #0A192F;
+      --card-color: #112F4E;
+      --text-color: #E0F7FA;
+      --muted-text: #80DEEA;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background-color: var(--background-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .card {
+      background-color: var(--card-color);
+      width: 90%;
+      max-width: 400px;
+      border-radius: 20px;
+      padding: 32px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(40px);
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .title {
+      font-size: 28px;
+      color: var(--primary-color);
+      font-weight: 600;
+      margin-bottom: 28px;
+    }
+
+    .pin-container {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .pin-box {
+      width: 70px;
+      height: 70px;
+      font-size: 36px;
+      font-weight: 700;
+      text-align: center;
+      border: 2px solid var(--secondary-color);
+      border-radius: 12px;
+      outline: none;
+      color: var(--text-color);
+      background-color: #073353;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+      caret-color: var(--secondary-color);
+    }
+
+    .pin-box:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 6px var(--primary-color);
+      background-color: #085ea8;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--secondary-color);
+      border-radius: 10px;
+      font-size: 22px;
+      color: var(--text-color);
+      background-color: #073353;
+    }
+
+    #mobile-field {
+      margin-bottom: 20px;
+    }
+
+    .auth-button {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 14px;
+      border: none;
+      border-radius: 28px;
+      font-size: 18px;
+      font-weight: 600;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.2s ease;
+      cursor: pointer;
+    }
+
+    .auth-button:hover {
+      background-color: #0277bd;
+    }
+
+    .switch-link {
+      margin-top: 20px;
+      color: var(--secondary-color);
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 14px;
+    }
+
+    .footer {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="title" id="title">Secure Vault</div>
+
+    <form id="auth-form" onsubmit="event.preventDefault(); handleSubmit();">
+      <div id="mobile-field" style="display: none;">
+        <input type="text" id="new-mobile" placeholder="Mobile number" maxlength="10" />
+      </div>
+
+      <div class="pin-container">
+        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 0)" id="pin0" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 1)" id="pin1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 2)" id="pin2" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 3)" id="pin3" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+      </div>
+
+      <button class="auth-button" type="submit" id="auth-button">
+        <span id="submit-text">Login</span>
+        <i class="material-icons">lock_open</i>
+      </button>
+    </form>
+
+    <div class="switch-link" onclick="toggleMode()">
+      <span id="switch-text">Don't have an account? Create one</span>
+    </div>
+
+    <div class="footer">© 2025 SecureVault</div>
+  </div>
+
+  <script>
+    let isCreating = false;
+
+    function toggleMode() {
+      isCreating = !isCreating;
+	  document.getElementById("title").textContent = isCreating ? "Create Account" : "Secure Vaule";
+      document.getElementById("switch-text").textContent = isCreating ? "Already have an account? Login" : "Don't have an account? Create one";
+      document.getElementById("submit-text").textContent = isCreating ? "Register" : "Login";
+      document.getElementById("mobile-field").style.display = isCreating ? "block" : "none";
+      if (isCreating) {
+        document.getElementById("new-mobile").focus();
+      } else {
+        clearMobileInput();
+      }
+    }
+
+    function clearMobileInput() {
+      document.getElementById("new-mobile").value = '';
+    }
+
+    function moveFocus(input, index) {
+      input.value = input.value.replace(/\D/, '');
+      if (input.value) {
+        if (index < 3) {
+          document.getElementById(`pin${index + 1}`).focus();
+        } else {
+          document.getElementById("auth-button").focus();
+        }
+      }
+    }
+
+    function handleSubmit() {
+      const pin = [...Array(4).keys()].map(i => document.getElementById(`pin${i}`).value).join('');
+      if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+        alert("Please enter a valid 4-digit PIN.");
+        return;
+      }
+
+      if (isCreating) {
+        const mobile = document.getElementById("new-mobile").value.trim();
+        if (!mobile || !/^\d{10}$/.test(mobile)) {
+          alert("Please enter a valid 10-digit mobile number.");
+          return;
+        }
+        alert(`✅ Account created for mobile number ${mobile} with PIN ${pin}`);
+      } else {
+        alert(`🔓 Welcome back! Authenticated with PIN ${pin}`);
+      }
+
+      // Clear PIN fields
+      for (let i = 0; i < 4; i++) document.getElementById(`pin${i}`).value = '';
+    }
+  </script>
+
+</body>
+</html>
