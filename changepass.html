@@ -32,6 +32,44 @@
             height: 100vh;
         }
 
+        /* Header */
+        backButton {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background-color: var(--card-color);
+            border-bottom: 1px solid #023f68;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 20px;
+            z-index: 1001;
+            user-select: none;
+            padding: 0 16px;
+        }
+
+        /* Hamburger */
+        #backButton {
+            position: fixed;
+            top: 12px;
+            left: 16px;
+            cursor: pointer;
+            color: var(--primary-color);
+            font-size: 28px;
+            z-index: 1100;
+            transition: color 0.2s ease;
+        }
+
+        #backButton:hover {
+            color: var(--secondary-color);
+            text-decoration:none;
+        }
+
+
         .card {
             background-color: var(--card-color);
             width: 90%;
@@ -98,6 +136,12 @@
     </style>
 </head>
 <body>
+    <header>
+        <div id="backButton" title="Back" tabindex="0" role="button">
+            <span class="material-icons">arrow_back</span>
+        </div>
+        Vault
+    </header>
 
     <div class="card">
         <div class="title">Change Password</div>
@@ -117,33 +161,39 @@
     </div>
 
     <script>
-    function handleChange() {
-      const mobile = document.getElementById("mobile").value.trim();
-      const oldPin = document.getElementById("old-pin").value.trim();
-      const newPin = document.getElementById("new-pin").value.trim();
+        const backButton = document.getElementById('backButton');        
 
-      if (!/^\d{10}$/.test(mobile)) {
-        alert("Please enter a valid 10-digit mobile number.");
-        return;
-      }
+        backButton.addEventListener('click', () => {
+            window.location.href = "home.html";
+        });
 
-      if (!/^\d{4}$/.test(oldPin) || !/^\d{4}$/.test(newPin)) {
-        alert("PINs must be 4-digit numbers.");
-        return;
-      }
+        function handleChange() {
+            const mobile = document.getElementById("mobile").value.trim();
+            const oldPin = document.getElementById("old-pin").value.trim();
+            const newPin = document.getElementById("new-pin").value.trim();
 
-      if (oldPin === newPin) {
-        alert("New PIN must be different from the old PIN.");
-        return;
-      }
+            if (!/^\d{10}$/.test(mobile)) {
+                alert("Please enter a valid 10-digit mobile number.");
+                return;
+            }
 
-      alert(`🔐 Password changed successfully for ${mobile}`);
+            if (!/^\d{4}$/.test(oldPin) || !/^\d{4}$/.test(newPin)) {
+                alert("PINs must be 4-digit numbers.");
+                return;
+            }
 
-      // Clear inputs
-      document.getElementById("mobile").value = '';
-      document.getElementById("old-pin").value = '';
-      document.getElementById("new-pin").value = '';
-    }
+            if (oldPin === newPin) {
+                alert("New PIN must be different from the old PIN.");
+                return;
+            }
+
+            alert(`🔐 Password changed successfully for ${mobile}`);
+
+            // Clear inputs
+            document.getElementById("mobile").value = '';
+            document.getElementById("old-pin").value = '';
+            document.getElementById("new-pin").value = '';
+        }
     </script>
 
 </body>

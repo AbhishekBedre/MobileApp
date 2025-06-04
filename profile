@@ -104,23 +104,30 @@
 </head>
 <body>
 
-    <div class="card">
-        <img src="https://placehold.co/120X120" alt="Profile Image" class="profile-img" />
-
-        <form onsubmit="event.preventDefault(); saveProfile();">
-            <input type="text" id="name" placeholder="Full Name" value="John Doe" />
-            <input type="email" id="email" placeholder="Email" value="john.doe@example.com" />
-            <input type="text" id="mobile" placeholder="Mobile Number" value="9876543210" maxlength="10" />
-
-            <button class="save-button" type="submit">
-                <span>Save</span>
-                <i class="material-icons">save</i>
-            </button>
-        </form>
-
-        <div class="footer">© 2025 SecureVault</div>
+    <header>
+    <div id="hamburger" title="Back" tabindex="0" role="button">
+        <span class="material-icons">arrow_back</span>
     </div>
+    Vault
+    </header>
+    <main id="mainContent">
+        <div class="card">
+            <img src="https://placehold.co/120X120" alt="Profile Image" class="profile-img" />
 
+            <form onsubmit="event.preventDefault(); saveProfile();">
+                <input type="text" id="name" placeholder="Full Name" value="John Doe" />
+                <input type="email" id="email" placeholder="Email" value="john.doe@example.com" />
+                <input type="text" id="mobile" placeholder="Mobile Number" value="9876543210" maxlength="10" />
+
+                <button class="save-button" type="submit">
+                    <span>Save</span>
+                    <i class="material-icons">save</i>
+                </button>
+            </form>
+
+            <div class="footer">© 2025 SecureVault</div>
+        </div>
+    </main>
     <script>
         function saveProfile() {
             const name = document.getElementById("name").value.trim();

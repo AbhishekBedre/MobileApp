@@ -214,7 +214,7 @@
         }
         alert(`✅ Account created for mobile number ${mobile} with PIN ${pin}`);
       } else {
-        alert(`🔓 Welcome back! Authenticated with PIN ${pin}`);
+        window.location.href = "home.html";
       }
 
       // Clear PIN fields
