@@ -91,15 +91,41 @@
             transition: background 0.2s ease;
         }
 
-            .save-button:hover {
-                background-color: #0277bd;
-            }
+        .save-button:hover {
+            background-color: #0277bd;
+        }
 
         .footer {
             font-size: 12px;
             color: #aaa;
             margin-top: 24px;
         }
+
+        /* Floating button */
+        .floating-button {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            z-index: 1000;
+        }
+
+        .floating-button:hover {
+            background-color: #0097a7;
+        }
+
     </style>
 </head>
 <body>
@@ -117,6 +143,10 @@
                 <i class="material-icons">save</i>
             </button>
         </form>
+
+        <button class="floating-button" onclick="scrollToTop()">
+            <i class="material-icons">arrow_upward</i>
+        </button>
 
         <div class="footer">© 2025 SecureVault</div>
     </div>
