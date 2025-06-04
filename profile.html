@@ -30,44 +30,7 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-        }
-
-                    /* Header */
-        #backButton {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: var(--header-height);
-            background-color: var(--card-color);
-            border-bottom: 1px solid #023f68;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary-color);
-            font-weight: 600;
-            font-size: 20px;
-            z-index: 1001;
-            user-select: none;
-            padding: 0 16px;
-        }
-
-        /* Hamburger */
-        #backButton {
-            position: fixed;
-            top: 12px;
-            left: 16px;
-            cursor: pointer;
-            color: var(--primary-color);
-            font-size: 28px;
-            z-index: 1100;
-            transition: color 0.2s ease;
-        }
-
-        #backButton:hover {
-            color: var(--secondary-color);
-            text-decoration:none;
-        }
+        }                   
 
         .card {
             background-color: var(--card-color);
@@ -138,15 +101,43 @@
             margin-top: 24px;
         }
 
+        .title-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 0;
+        }
+
+
     </style>
 </head>
 <body>
-    <header>
-        <div id="backButton" title="Back" tabindex="0" role="button">
-            <span class="material-icons">arrow_back</span>
-        </div>
-        Vault
-    </header>
+    
+    <div class="title-bar">
+        <button class="back-button" onclick="goBack()">
+            <i class="material-icons">arrow_back</i>
+        </button>
+        <h1 class="title">Vault</h1>
+    </div>
+
     <div class="card">
         <img src="https://placehold.co/120X120" alt="Profile Image" class="profile-img" />
 
@@ -166,11 +157,11 @@
     
 
     <script>
-        const backButton = document.getElementById('backButton');        
+        
+        function goBack() {
+            window.history.back();
+        }
 
-        backButton.addEventListener('click', () => {
-            window.location.href = "home.html";
-        });
         
         function saveProfile() {
             const name = document.getElementById("name").value.trim();
