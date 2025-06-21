@@ -265,7 +265,7 @@
           ${dropdown('card-type', ['Visa Card', 'Master Card', 'Rupay Card'], 'Card Type')}
           ${input('card-holder', 'Card Holder Name')}
           ${input('bank-name', 'Bank Name')}
-          ${input('card-no', 'Card Number')}
+          ${input('card-no', 'Card Number', 'number')}
           <div style="display:flex; gap:10px;">
             ${dropdown('exp-month', [...Array(12).keys()].map(i => String(i+1).padStart(2, '0')), 'Exp Month')}
             ${dropdown('exp-year', Array.from({length: 12}, (_, i) => new Date().getFullYear() + i), 'Exp Year')}
