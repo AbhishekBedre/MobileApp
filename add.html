@@ -217,8 +217,8 @@
   
         <!-- Item Type Dropdown -->
         <select id="item-type" onchange="renderForm()" style="margin-bottom: 16px;">
-          <option value="0" selected>Credit Cards</option>
-          <option value="1" >Debit Cards</option>
+          <option value="0" selected>Credit Card</option>
+          <option value="1" >Debit Card</option>
           <option value="2">Netbanking</option>
           <option value="3">Login</option>
           <!-- <option value="4">Other</option> -->
@@ -228,7 +228,7 @@
         <div id="form-fields"></div>
   
         <button class="auth-button" type="submit">
-          <span>Add Detail</span>
+          <span id="btnSaveTxt">Save Credit Card</span>
           <i class="material-icons">save</i>
         </button>
       </form>
@@ -247,6 +247,10 @@
 
     function renderForm() {
       const itemType = document.getElementById('item-type').value;
+      const select = document.getElementById('item-type');
+      const selectedText = select.options[select.selectedIndex].text;
+
+      document.getElementById('btnSaveTxt').innerText = 'Save ' + selectedText;
       const formFields = document.getElementById('form-fields');
       formFields.innerHTML = ''; // Clear existing
   

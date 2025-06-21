@@ -338,6 +338,11 @@
 
   <script>
 
+    function cardClick(m){
+      console.log(m);
+      alert(m.getAttribute("type"));
+    }
+
     function addItem() {
       window.location.href = "add.html";
     }
@@ -397,6 +402,7 @@
 		expiry: "12/26",
 		bankName: "Chase Bank",
 		cardType: "Visa",
+    description: "This is gmail login details."
 	  },
 	  {
 		type: "Debit Card",
@@ -406,6 +412,7 @@
 		expiry: "11/25",
 		bankName: "Wells Fargo",
 		cardType: "MasterCard",
+    description: "This is gmail login details."
 	  },
 	  {
 		type: "Netbanking",
@@ -415,6 +422,7 @@
 		expiry: "",
 		bankName: "Bank of America",
 		cardType: "NetBanking",
+    description: "This is gmail login details."
 	  },
 	  {
 		type: "Credit Card",
@@ -424,7 +432,24 @@
 		expiry: "09/24",
 		bankName: "Citibank",
 		cardType: "RuPay",
-	  }
+    description: "This is gmail login details."
+	  },
+    {
+      type:"Login",
+      name: "Gmail",
+      username: "abhishek.bedre@alkami.com",
+      password: 'Test@1234',
+      description: "This is gmail login details.",
+      cardType:'',
+    },
+    {
+      type:"Login",
+      name: "LIC",
+      username: "abhishek.bedre@alkami.com",
+      password: "Jane123456",
+      description: "This is gmail login details.",
+      cardType:'',
+    }
 	];
 
 
@@ -455,29 +480,62 @@
 
 		  const cardEl = document.createElement('div');
 		  cardEl.className = `card ${cardClass}`;
+      cardEl.setAttribute('onclick', 'cardClick(this)');
+      let index = 0;
+      switch(card.type)
+      {
+        case "Credit Card":
+          index = 0;
+          break;
+        case "Debit Card":
+          index = 1;
+          break;
+        case "Netbanking":
+          index = 2;
+          break;
+        case "Login":
+          index = 3;
+          break;
+        default:
+          index = 4;
+          break;
+      }
+      
+      cardEl.setAttribute('type', index);      
 
 		  cardEl.innerHTML = `
-			<div class="card-type-brand">${card.cardType}</div>
-			<div class="card-number">${card.cardNo}</div>
-
-			<div>
+			<div class="card-type-brand">${ card.type + " - " + (card.cardType == '' ? card.name : card.cardType) }</div>
+      ${
+        card.type == "Login" ? '' : '<div class="card-number">' + card.cardNo + '</div>'
+      }
+ 
+      <div>
 				<table width="100%">
 					<tr>
 						<td style="text-align: left;">
-							<div class="label-small">Card Holder</div>
-							<div class="card-holder-name">${card.name}</div>
+							<div class="label-small">${ card.type == 'Login' ? 'Name' : 'Card Holder'} </div>
+							<div class="card-holder-name">${card.type == 'Login' ? card.username : card.type }</div>
 						</td>
-						<td>
+          ${ card.type == 'Login' ? '' :  
+						`<td>
 							<div class="label-small">Bank</div>
 							<div class="bank-name">${card.bankName}</div>	
-						</td>
+						</td>`
+          }
 					</tr>
+          ${ card.type == 'Login' ? 
+          `<tr>
+            <td colspan="2">
+              <div class="label-small">Password</div>
+              <div class="bank-name">${ card.password }</div>              
+            </td>
+          </tr>` : ''
+          }
 				</table>
 			</div>
-			
 			<hr class="card-divider" />
 
-			<div class="description">${card.type}</div>
+			<div class="description">${card.description}</div>
 		  `;
 
 		  cardsContainer.appendChild(cardEl);
