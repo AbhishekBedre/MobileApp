@@ -250,7 +250,7 @@
       const formFields = document.getElementById('form-fields');
       formFields.innerHTML = ''; // Clear existing
   
-      const input = (id, placeholder, type = 'text', max = '', forceNumberPad) =>
+      const input = (id, placeholder, type = 'text', forceNumberPad = false, max = '') =>
         `<input type="${type}" id="${id}" placeholder="${placeholder}" ${max ? `maxlength="${max}"` : ''} ${ forceNumberPad ? `inputmode="numeric" pattern="[0-9]*"` : '' } />`;
   
       const dropdown = (id, options, label) => `
@@ -268,7 +268,7 @@
             ${dropdown('exp-month', [...Array(12).keys()].map(i => String(i+1).padStart(2, '0')), 'Exp Month')}
             ${dropdown('exp-year', Array.from({length: 12}, (_, i) => new Date().getFullYear() + i), 'Exp Year')}
           </div>
-          ${input('cvv', 'CVV', 'number', 3)}
+          ${input('cvv', 'CVV', 'number', false, 3)}
           ${input('limit', 'Card Limit', 'number')}
           <input type="date" id="bill-date" />
           ${input('description', 'Description')}
