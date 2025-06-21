@@ -217,11 +217,11 @@
   
         <!-- Item Type Dropdown -->
         <select id="item-type" onchange="renderForm()" style="margin-bottom: 16px;">
-          <option value="-1">Select Item Type</option>
-          <option value="0" selected>Cards</option>
-          <option value="1">Netbanking</option>
-          <option value="2">Login</option>
-          <option value="3">Other</option>
+          <option value="0" selected>Credit Cards</option>
+          <option value="1" >Debit Cards</option>
+          <option value="2">Netbanking</option>
+          <option value="3">Login</option>
+          <!-- <option value="4">Other</option> -->
         </select>
   
         <!-- Placeholder for dynamic inputs -->
@@ -258,9 +258,9 @@
           ${options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
         </select>`;
   
-      if (itemType === '0') {
+      if (itemType === '0' || itemType == '1') {
         formFields.innerHTML = `
-          ${dropdown('card-type', ['Visa Card', 'Master Card', 'Rupay Card'], 'Card Type')}
+          ${dropdown('card-type', ['Visa Card', 'Master Card', 'Rupay Card', 'Pluxee Card'], 'Card Type')}
           ${input('card-holder', 'Card Holder Name')}
           ${input('bank-name', 'Bank Name')}
           ${input('card-no', 'Card Number', 'number')}
@@ -268,37 +268,35 @@
             ${dropdown('exp-month', [...Array(12).keys()].map(i => String(i+1).padStart(2, '0')), 'Exp Month')}
             ${dropdown('exp-year', Array.from({length: 12}, (_, i) => new Date().getFullYear() + i), 'Exp Year')}
           </div>
-          ${input('cvv', 'CVV', 'nmber', 3)}
+          ${input('cvv', 'CVV', 'number', 3)}
           ${input('limit', 'Card Limit', 'number')}
           <input type="date" id="bill-date" />
           ${input('description', 'Description')}
         `;
-      } else if (itemType === '1') {
+      } else if (itemType === '2') {
         formFields.innerHTML = `
           ${input('acc-holder', 'Account Holder Name')}
           ${input('bank-name', 'Bank Name')}
-          ${input('acc-no', 'Account Number')}
+          ${input('acc-no', 'Account Number', 'number')}
           ${input('custom-id', 'Custom ID')}
-          ${input('reg-mobile', 'Registered Mobile Number')}
+          ${input('reg-mobile', 'Registered Mobile Number', 'number')}
           ${input('user-id', 'User ID')}
           ${input('login-pass', 'Login Password', 'password')}
           ${input('txn-pass', 'Transaction Password', 'password')}
           ${input('profile-pass', 'Profile Password', 'password')}
           ${input('mobile-username', 'Mobile Username')}
-          ${input('mobile-pin', 'Mobile PIN', 'password')}
+          ${input('mobile-pin', 'Mobile PIN', 'password', 'number')}
           ${input('description', 'Description')}
         `;
-      } else if (itemType === '2') {
+      } else if (itemType === '3') {
         formFields.innerHTML = `
           ${input('login-name', 'Name')}
           ${input('username', 'Username')}
           ${input('password', 'Password', 'password')}
           ${input('description', 'Description')}
         `;
-      } else if (itemType === '3') {
-        formFields.innerHTML = `<p style="color:var(--muted-text);">Please define your custom fields.</p>`;
       }
-      
+
       const today = new Date().toISOString().split('T')[0];
       setTimeout(() => {
         const billDateInput = document.getElementById('bill-date');
