@@ -250,8 +250,8 @@
       const formFields = document.getElementById('form-fields');
       formFields.innerHTML = ''; // Clear existing
   
-      const input = (id, placeholder, type = 'text', max = '') =>
-        `<input type="${type}" id="${id}" placeholder="${placeholder}" ${max ? `maxlength="${max}"` : ''}/>`;
+      const input = (id, placeholder, type = 'text', max = '', forceNumberPad) =>
+        `<input type="${type}" id="${id}" placeholder="${placeholder}" ${max ? `maxlength="${max}"` : ''} ${ forceNumberPad ? `inputmode="numeric" pattern="[0-9]*"` : '' } />`;
   
       const dropdown = (id, options, label) => `
         <select id="${id}" style="margin-bottom:16px;">
@@ -285,7 +285,7 @@
           ${input('txn-pass', 'Transaction Password', 'password')}
           ${input('profile-pass', 'Profile Password', 'password')}
           ${input('mobile-username', 'Mobile Username')}
-          ${input('mobile-pin', 'Mobile PIN', 'password', 'number')}
+          ${input('mobile-pin', 'Mobile PIN', 'password', true)}
           ${input('description', 'Description')}
         `;
       } else if (itemType === '3') {
