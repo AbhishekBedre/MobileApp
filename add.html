@@ -120,7 +120,7 @@
             transform: translateY(0);
         }
     }
-    input[type="text"], input[type="password"] {
+    input[type="text"], input[type="password"], input[type="number"] {
         width: 100%;
         padding: 12px 16px;
         border: 2px solid var(--secondary-color);
@@ -192,8 +192,6 @@
     input[type="date"]::-webkit-calendar-picker-indicator {
       filter: invert(1);
     }
-
-
 
     .footer {
         font-size: 12px;
@@ -270,8 +268,8 @@
             ${dropdown('exp-month', [...Array(12).keys()].map(i => String(i+1).padStart(2, '0')), 'Exp Month')}
             ${dropdown('exp-year', Array.from({length: 12}, (_, i) => new Date().getFullYear() + i), 'Exp Year')}
           </div>
-          ${input('cvv', 'CVV', 'text', 3)}
-          ${input('limit', 'Card Limit')}
+          ${input('cvv', 'CVV', 'nmber', 3)}
+          ${input('limit', 'Card Limit', 'number')}
           <input type="date" id="bill-date" />
           ${input('description', 'Description')}
         `;
@@ -300,6 +298,13 @@
       } else if (itemType === '3') {
         formFields.innerHTML = `<p style="color:var(--muted-text);">Please define your custom fields.</p>`;
       }
+      
+      const today = new Date().toISOString().split('T')[0];
+      setTimeout(() => {
+        const billDateInput = document.getElementById('bill-date');
+        if (billDateInput) billDateInput.value = today;
+      }, 0);
+
     }
   
     function handleSubmit() {
