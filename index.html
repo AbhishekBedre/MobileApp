@@ -4,22 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Secure Vault</title>
+  <script src="cordova.js"></script>
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <!-- Material Icons -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
-  <style>
-    :root {
-      --primary-color: #0288D1;
-      --secondary-color: #00BCD4;
-      --background-color: #0A192F;
-      --card-color: #112F4E;
-      --text-color: #E0F7FA;
-      --muted-text: #80DEEA;
-    }
+  <link rel="stylesheet" href="css/common.css" />
 
+  <style>
+    
     * {
       box-sizing: border-box;
     }
@@ -138,12 +133,11 @@
     }
   </style>
 </head>
-<body>
-
+<body>    
   <div class="card">
     <div class="title" id="title">Secure Vault</div>
 
-    <form id="auth-form" onsubmit="event.preventDefault(); handleSubmit();">
+    <form id="auth-form">
       <div id="mobile-field" style="display: none;">
         <input type="text" id="new-mobile" placeholder="Mobile number" maxlength="10" />
       </div>
@@ -155,10 +149,18 @@
         <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 3)" id="pin3" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
       </div>
 
-      <button class="auth-button" type="submit" id="auth-button">
+      <button class="auth-button" type="button" id="auth-button" onclick="handleSubmit();">
         <span id="submit-text">Login</span>
         <i class="material-icons">lock_open</i>
       </button>
+      <!-- <button class="auth-button" type="button" id="takePictureBtn">
+        <span id="submit-text">Camera</span>
+        <i class="material-icons">lock_open</i>
+      </button>
+      <button class="auth-button" type="button" id="preferences">
+        <span id="submit-text">Save Preferences</span>
+        <i class="material-icons">lock_open</i>
+      </button> -->
     </form>
 
     <div class="switch-link" onclick="toggleMode()">
@@ -166,6 +168,8 @@
     </div>
 
     <div class="footer">© 2025 SecureVault</div>
+
+    <!-- <img id="photo" style="width: 100%; margin-top: 10px;" /> -->
   </div>
 
   <script>
@@ -220,6 +224,28 @@
       // Clear PIN fields
       for (let i = 0; i < 4; i++) document.getElementById(`pin${i}`).value = '';
     }
+  </script>
+
+  <script>
+      document.getElementById('takePictureBtn').addEventListener('click', async () => {
+          try {
+              const photo = await Capacitor.Plugins.Camera.getPhoto({
+                  quality: 90,
+                  allowEditing: false,
+                  resultType: 'dataUrl',  // You can also use Base64 or Uri
+                  source: 'CAMERA'
+              });
+
+              // Display the photo
+              const imageElement = document.getElementById('photo');
+              imageElement.src = photo.dataUrl;
+
+              // If you want the raw data:
+              // console.log(photo);
+          } catch (error) {
+              alert('Camera error:', error.message);
+          }
+      });
   </script>
 
 </body>
