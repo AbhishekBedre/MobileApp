@@ -338,9 +338,10 @@
 
   <script>
 
-    function cardClick(m){
-      console.log(m);
-      alert(m.getAttribute("type"));
+    function cardClick(ctrlReff){
+      console.log(ctrlReff);
+      var type = ctrlReff.getAttribute("type");
+      window.location.href = "add.html?id=" + type;
     }
 
     function addItem() {
