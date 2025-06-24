@@ -203,7 +203,7 @@
       }
     }
 
-    function handleSubmit() {
+    async function handleSubmit() {
       const pin = [...Array(4).keys()].map(i => document.getElementById(`pin${i}`).value).join('');
       if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
         alert("Please enter a valid 4-digit PIN.");
@@ -216,9 +216,32 @@
           alert("Please enter a valid 10-digit mobile number.");
           return;
         }
+
+        var authObject = {
+          mobileNo: mobile,
+          pin: pin
+        }
+
+        // Save Mobile and PIN. 
+        var authValues = await Capacitor.Plugins.Preferences.set({
+          key: "Auth",
+          value: JSON.stringify(authObject)
+        });
+
         alert(`✅ Account created for mobile number ${mobile} with PIN ${pin}`);
       } else {
-        window.location.href = "home.html";
+        
+        var authData = await Capacitor.Plugins.Preferences.get({
+          key: "Auth"
+        });
+
+        var authValues = JSON.parse(authData.value); 
+        
+        if(authValues?.pin == pin) {
+          window.location.href = "home.html";
+        } else {
+          alert('Invalid PIN');
+        }
       }
 
       // Clear PIN fields
