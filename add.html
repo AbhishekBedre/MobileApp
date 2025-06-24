@@ -213,7 +213,7 @@
           <option value="1" >Debit Card</option>
           <option value="2">Netbanking</option>
           <option value="3">Login</option>
-          <!-- <option value="4">Other</option> -->
+          <option value="4">Reminer</option>
         </select>
   
         <!-- Placeholder for dynamic inputs -->
@@ -251,12 +251,12 @@
   
       const dropdown = (id, options, label) => `
         <select id="${id}" style="margin-bottom:16px;">
-          ${options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+          ${options.map((opt, index) => `<option value="${index}">${opt}</option>`).join('')}
         </select>`;
   
       if (itemType === '0' || itemType == '1') {
         formFields.innerHTML = `
-          ${dropdown('card-type', ['Visa Card', 'Master Card', 'Rupay Card', 'Pluxee Card'], 'Card Type')}
+          ${dropdown('card-type', ['Visa Card', 'Master Card', 'Rupay Card', 'American Express', 'Pluxee Card'], 'Card Type')}
           ${input('card-holder', 'Card Holder Name')}
           ${input('bank-name', 'Bank Name')}
           ${input('card-no', 'Card Number', 'number')}
@@ -301,10 +301,233 @@
 
     }
   
-    function handleSubmit() {
-      // Add validation or submission logic here
+    function handleSubmit() {      
+
+      const itemType = document.getElementById('item-type').value;
+
+      if(itemType == '0' || itemType == '1') {
+        var cardType = document.getElementById('card-type').value;
+        var cardHolderName = document.getElementById('card-holder').value;
+        var bankName = document.getElementById('bank-name').value;
+        var cardNo = document.getElementById('card-no').value;
+        var expMonth = document.getElementById('exp-month').value;
+        var expYear = document.getElementById('exp-year').value;
+        var cvv = document.getElementById('cvv').value;
+        var cardLimit = document.getElementById('limit').value;
+        var billDate = document.getElementById('bill-date').value;
+        var description = document.getElementById('description').value;
+      }
+
+      var keyToRead = "CreditCards";
+      // Read the older credit card using "CreditCards" key  
+      if(itemType == '0')
+        keyToRead = "CreditCards";        
+      else if(itemType == '1')
+        keyToRead = "DebitCards";
+      else if(itemType == '2') {
+        keyToRead= "Netbankings";
+
+        var accountHolderName = document.getElementById('acc-holder').value;
+        var bankName = document.getElementById('bank-name').value;
+        var accountNo = document.getElementById('acc-no').value;
+        var customId = document.getElementById('custom-id').value;
+        var regMobile = document.getElementById('reg-mobile').value;
+        var userId = document.getElementById('user-id').value;
+        var loginPassword = document.getElementById('login-pass').value;
+        var txnPassword = document.getElementById('txn-pass').value;
+        var profilePassword = document.getElementById('profile-pass').value;
+        var mobileUsername = document.getElementById('mobile-username').value;
+        var mobilePIN = document.getElementById('mobile-pin').value;
+        var description = document.getElementById('description').value;
+      }
+      else if(itemType == '3') {
+        keyToRead = "Logins";
+
+        var loginName = document.getElementById('login-name').value;
+        var username = document.getElementById('username').value;
+        var password = document.getElementById('password').value;
+        var description = document.getElementById('description').value;        
+      }
+      else if(itemType == '4')
+        keyToRead = "Reminders";
+      else 
+        keyToRead = "None";
+
+      if(itemType == '0' || itemType == '1') 
+      {
+        var oldDataBasedOnKey = { data: []};  // reading from `keyToRead`
+
+        var totalLength = oldDataBasedOnKey.data.length;
+
+        var jsonObject = {
+            id: ++totalLength,
+            type: GetItemTypeName(itemType),
+            cardType: GetCardTypeName(cardType),
+            name: cardHolderName,
+            bankName: bankName,
+            cardNo: cardNo,          
+            expiryMonth: expMonth,
+            expiryYear: expYear,
+            cvv: cvv,
+            cardLimit: cardLimit,
+            billingDate: billDate,
+            description: description
+        }
+
+        console.log(jsonObject);
+      } 
+      else if(itemType == '2') 
+      {
+        var oldDataBasedOnKey = { data: []};  // reading from `keyToRead`
+
+        var totalLength = oldDataBasedOnKey.data.length;
+
+        var netbankingJSONObject = {
+            id: ++totalLength,
+            type: GetItemTypeName(itemType),
+            name: accountHolderName,
+            bankName: bankName,
+            accountNo: accountNo,
+            customerId: customId,
+            mobileNo: regMobile,
+            userId: userId,
+            loginPssword: loginPassword,
+            profilePassword: profilePassword,
+            transactionPassword: txnPassword,
+            mobileUsername: mobileUsername,
+            mobilePIN: mobilePIN,
+            description: description
+        }
+
+        console.log(netbankingJSONObject);
+
+        // Push this to preferences
+      } 
+      else if(itemType == '3')
+      {
+        var oldDataBasedOnKey = { data: []};  // reading from `keyToRead`
+
+        var totalLength = oldDataBasedOnKey.data.length;
+
+        var loginJSONObject = {
+          type: GetItemTypeName(itemType),
+          name: loginName,
+          userId: username,
+          loginPssword: password,
+          description: description
+        }
+
+        console.log(loginJSONObject);
+
+        // push to preferences
+
+      }
+
       alert("Form submitted!");
     }
+
+    function GetItemTypeName(value){
+      if(value == '0')
+        return "Credit Card";
+      else if(value == '1')
+        return "Debit Card";
+      else if (value == '2')
+        return "Netbanking";
+      else if(value == '3')
+        return "Login";
+      else if(value == '4')
+        return "Reminder";
+      else 
+        return 'None'
+    }
+
+    function GetCardTypeName(value){
+      if(value == '0')
+        return "Visa";
+      else if(value == '1')
+        return "Master";
+      else if (value == '2')
+        return "Rupay";
+      else if(value == '3')
+        return "American Express";
+      else if(value == '4')
+        return "Pluxee";
+      else 
+        return 'None'
+    }
+
+    var jsonObject = {
+      "data": [
+        {
+          id:1,
+          type: "Credit Card",
+          cardType: "Visa",
+          name: "Alice Johnson",          
+          bankName: "Chase Bank",
+          cardNo: "1234 5678 9012 3456",          
+          expiryMonth: 12,
+          expiryYear: 2026,
+          cvv: 123,
+          cardLimit: "2500000",
+          billingDate: "2025-12-17",
+          description: "This is gmail login details."
+        },
+        {
+          id:2,
+          type: "Debit Card",
+          cardType: "Master",
+          name: "Alice Johnson",          
+          bankName: "Chase Bank",
+          cardNo: "1234 5678 9012 3456",          
+          expiryMonth: 12,
+          expiryYear: 2026,
+          cvv: 123,
+          cardLimit: "2500000",
+          billingDate: "2025-12-17",
+          description: "This is gmail login details."
+        },
+        {
+          id:3,
+          type: "Netbanking",
+          name: "Alice Johnson",
+          bankName: "Chase Bank",
+          accountNo: "15671050013540",
+          customerId: "37516352",
+          mobileNo: "8530209649",
+          userId: "37516352",
+          loginPssword: "Test",
+          profilePassword: "Test",
+          transactionPassword: "",
+          mobileUsername: "",
+          mobilePIN: "",
+          description: "This is gmail login details."
+        },
+        {
+          id:4,
+          type: "Login",
+          name: "Alice Johnson",
+          userId: "37516352",
+          loginPssword: "Test",
+          description: "This is gmail login details."
+        },
+        {
+          id:5,
+          type:"Reminder",
+          name: "PAPA FD KOTAK",
+          scheduled: "2025-08-13",
+          description: "Interest credits every month"
+        },
+        {
+          id:6,
+          type:"Reminder",
+          name: "PAPA FD KOTAK Mature",
+          scheduled: "2026-08-13",
+          description: "FD Mature from KOTAK BANK"
+        },
+
+      ]
+    }
+
   </script>
     
 </body>
