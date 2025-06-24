@@ -329,7 +329,8 @@
   </main>
 
   <script>
-
+    var cardData = [];
+    
     function cardClick(ctrlReff){
       console.log(ctrlReff);
       var type = ctrlReff.getAttribute("type");
@@ -340,9 +341,103 @@
       window.location.href = "add.html";
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
       sidePanel.classList.remove('open');
       mainContent.classList.remove('shifted');
+
+      var creditCardData = await Capacitor.Plugins.Preferences.get({
+        key: "CreditCards"
+      });
+
+      var creditCardValues = JSON.parse(creditCardData.value); 
+
+      var debitCardData = await Capacitor.Plugins.Preferences.get({
+        key: "DebitCards"
+      });
+
+      var debitCardValues = JSON.parse(debitCardData.value); 
+
+      var netbankingsData = await Capacitor.Plugins.Preferences.get({
+        key: "Netbankings"
+      });
+
+      var netbankingsValues = JSON.parse(netbankingsData.value); 
+
+      var loginsData = await Capacitor.Plugins.Preferences.get({
+        key: "Logins"
+      });
+
+      var loginsValues = JSON.parse(loginsData.value);
+
+      cardData = [
+        {
+          type: "Credit Card",
+          cardNo: "1234 5678 9012 3456",
+          name: "Alice Johnson",
+          cvv: "123",
+          expiry: "12/26",
+          bankName: "Chase Bank",
+          cardType: "Visa",
+          description: "This is gmail login details."
+        },
+        {
+          type: "Debit Card",
+          cardNo: "9876 5432 1098 7654",
+          name: "Bob Smith",
+          cvv: "456",
+          expiry: "11/25",
+          bankName: "Wells Fargo",
+          cardType: "MasterCard",
+          description: "This is gmail login details."
+        },
+        {
+          type: "Netbanking",
+          cardNo: "1567 1050 0135 40",
+          name: "Charlie Davis",
+          cvv: "",
+          expiry: "",
+          bankName: "Bank of America",
+          cardType: "NetBanking",
+          description: "This is gmail login details."
+        },
+        {
+          type: "Credit Card",
+          cardNo: "4444 3333 2222 1111",
+          name: "Diana Prince",
+          cvv: "321",
+          expiry: "09/24",
+          bankName: "Citibank",
+          cardType: "RuPay",
+          description: "This is gmail login details."
+        },
+        {
+          type:"Login",
+          name: "Gmail",
+          username: "abhishek.bedre@alkami.com",
+          password: 'Test@1234',
+          description: "This is gmail login details.",
+          cardType:'',
+        },
+        {
+          type:"Login",
+          name: "LIC",
+          username: "abhishek.bedre@alkami.com",
+          password: "Jane123456",
+          description: "This is gmail login details.",
+          cardType:'',
+        }
+      ];
+
+      cardData = [];
+
+      creditCardValues != null ? cardData.push(...creditCardValues.data) : '';
+      debitCardValues != null ? cardData.push(...debitCardValues.data) : '';
+      netbankingsValues != null ? cardData.push(...netbankingsValues.data) : '';
+      loginsValues != null ? cardData.push(...loginsValues.data) : '';
+      
+      // Initial render
+      renderCards();
+
     });
 
     const hamburger = document.getElementById('hamburger');
@@ -386,161 +481,99 @@
       }
     });
 
-    const cardData = [
-	  {
-		type: "Credit Card",
-		cardNo: "1234 5678 9012 3456",
-		name: "Alice Johnson",
-		cvv: "123",
-		expiry: "12/26",
-		bankName: "Chase Bank",
-		cardType: "Visa",
-    description: "This is gmail login details."
-	  },
-	  {
-		type: "Debit Card",
-		cardNo: "9876 5432 1098 7654",
-		name: "Bob Smith",
-		cvv: "456",
-		expiry: "11/25",
-		bankName: "Wells Fargo",
-		cardType: "MasterCard",
-    description: "This is gmail login details."
-	  },
-	  {
-		type: "Netbanking",
-		cardNo: "1567 1050 0135 40",
-		name: "Charlie Davis",
-		cvv: "",
-		expiry: "",
-		bankName: "Bank of America",
-		cardType: "NetBanking",
-    description: "This is gmail login details."
-	  },
-	  {
-		type: "Credit Card",
-		cardNo: "4444 3333 2222 1111",
-		name: "Diana Prince",
-		cvv: "321",
-		expiry: "09/24",
-		bankName: "Citibank",
-		cardType: "RuPay",
-    description: "This is gmail login details."
-	  },
-    {
-      type:"Login",
-      name: "Gmail",
-      username: "abhishek.bedre@alkami.com",
-      password: 'Test@1234',
-      description: "This is gmail login details.",
-      cardType:'',
-    },
-    {
-      type:"Login",
-      name: "LIC",
-      username: "abhishek.bedre@alkami.com",
-      password: "Jane123456",
-      description: "This is gmail login details.",
-      cardType:'',
-    }
-	];
-
-
     const cardsContainer = document.getElementById('cardsContainer');
     const searchInput = document.getElementById('searchInput');
 
     function renderCards(filter = '') {
-		const searchTerm = filter.toLowerCase();
-		cardsContainer.innerHTML = '';
+      const searchTerm = filter.toLowerCase();
+      cardsContainer.innerHTML = '';
 
-		const filteredCards = cardData.filter(card => {
-		  return Object.values(card).some(val =>
-			val.toLowerCase().includes(searchTerm)
-		  );
-		});
+      const filteredCards = cardData.filter(card => {
+        return Object.values(card).some(val =>
+        String(val).toLowerCase().includes(searchTerm)
+        );
+      });
 
-		if (filteredCards.length === 0) {
-		  cardsContainer.innerHTML = '<p>No matching cards found.</p>';
-		  return;
-		}
-
-		filteredCards.forEach(card => {
-		  // Determine card class based on type
-		  let cardClass = 'other';
-		  if (card.type.toLowerCase().includes('credit')) cardClass = 'credit';
-		  else if (card.type.toLowerCase().includes('debit')) cardClass = 'debit';
-		  else if (card.type.toLowerCase().includes('netbanking')) cardClass = 'netbanking';
-
-		  const cardEl = document.createElement('div');
-		  cardEl.className = `card ${cardClass}`;
-      cardEl.setAttribute('onclick', 'cardClick(this)');
-      let index = 0;
-      switch(card.type)
-      {
-        case "Credit Card":
-          index = 0;
-          break;
-        case "Debit Card":
-          index = 1;
-          break;
-        case "Netbanking":
-          index = 2;
-          break;
-        case "Login":
-          index = 3;
-          break;
-        default:
-          index = 4;
-          break;
+      if (filteredCards.length === 0) {
+        cardsContainer.innerHTML = '<p>No matching cards found.</p>';
+        return;
       }
-      
-      cardEl.setAttribute('type', index);      
 
-		  cardEl.innerHTML = `
-			<div class="card-type-brand">${ card.type + " - " + (card.cardType == '' ? card.name : card.cardType) }</div>
-      ${
-        card.type == "Login" ? '' : '<div class="card-number">' + card.cardNo + '</div>'
-      }
- 
-      <div>
-				<table width="100%">
-					<tr>
-						<td style="text-align: left;">
-							<div class="label-small">${ card.type == 'Login' ? 'Name' : 'Card Holder'} </div>
-							<div class="card-holder-name">${card.type == 'Login' ? card.username : card.type }</div>
-						</td>
-          ${ card.type == 'Login' ? '' :  
-						`<td>
-							<div class="label-small">Bank</div>
-							<div class="bank-name">${card.bankName}</div>	
-						</td>`
-          }
-					</tr>
-          ${ card.type == 'Login' ? 
-          `<tr>
-            <td colspan="2">
-              <div class="label-small">Password</div>
-              <div class="bank-name">${ card.password }</div>              
-            </td>
-          </tr>` : ''
-          }
-				</table>
-			</div>
-			<hr class="card-divider" />
+      filteredCards.forEach(card => {
+        // Determine card class based on type
+        let cardClass = 'other';
+        if (card.type.toLowerCase().includes('credit')) cardClass = 'credit';
+        else if (card.type.toLowerCase().includes('debit')) cardClass = 'debit';
+        else if (card.type.toLowerCase().includes('netbanking')) cardClass = 'netbanking';
+        else if (card.type.toLowerCase().includes('logins')) cardClass = 'logins';
 
-			<div class="description">${card.description}</div>
-		  `;
+        const cardEl = document.createElement('div');
+        cardEl.className = `card ${cardClass}`;
+        cardEl.setAttribute('onclick', 'cardClick(this)');
+        let index = 0;
+        switch(card.type)
+        {
+          case "Credit Card":
+            index = 0;
+            break;
+          case "Debit Card":
+            index = 1;
+            break;
+          case "Netbanking":
+            index = 2;
+            break;
+          case "Login":
+            index = 3;
+            break;
+          default:
+            index = 4;
+            break;
+        }
+        
+        cardEl.setAttribute('type', index);      
 
-		  cardsContainer.appendChild(cardEl);
-		});
-	}
+        cardEl.innerHTML = `
+        <div class="card-type-brand">${ card.type =='Login' ? (card.type + ' -  ' + card.name) : (card.type == 'Netbanking' ? card.type : (card.type + ' - ' + card.cardType)) }</div>
+        ${
+          card.type == "Login" ? '' : '<div class="card-number">' + (card.type == 'Netbanking' ? card.accountNo : card.cardNo) + '</div>'
+        }
+        <div>
+          <table width="100%">
+            <tr>
+              <td style="text-align: left;">
+                <div class="label-small">${ card.type == 'Login' ? 'Name' : 'Card Holder'} </div>
+                <div class="card-holder-name">${card.type == 'Login' ? card.userId : card.name }</div>
+              </td>
+            ${ card.type == 'Login' ? '' :  
+              `<td>
+                <div class="label-small">Bank</div>
+                <div class="bank-name">${card.bankName}</div>	
+              </td>`
+            }
+            </tr>
+            ${ card.type == 'Login' ? 
+            `<tr>
+              <td colspan="2">
+                <div class="label-small">Password</div>
+                <div class="bank-name">${ card.loginPassword }</div>              
+              </td>
+            </tr>` : ''
+            }
+          </table>
+        </div>
+        <hr class="card-divider" />
+
+        <div class="description">${card.description}</div>
+        `;
+
+        cardsContainer.appendChild(cardEl);
+      });
+	  }
 
     searchInput.addEventListener('input', (e) => {
       renderCards(e.target.value);
     });
 
-    // Initial render
-    renderCards();
   </script>
 
 </body>

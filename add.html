@@ -301,7 +301,7 @@
 
     }
   
-    function handleSubmit() {      
+    async function handleSubmit() {      
 
       const itemType = document.getElementById('item-type').value;
 
@@ -355,9 +355,26 @@
 
       if(itemType == '0' || itemType == '1') 
       {
-        var oldDataBasedOnKey = { data: []};  // reading from `keyToRead`
+        var creditDebitValues = await Capacitor.Plugins.Preferences.get({
+          key: keyToRead
+        });
 
-        var totalLength = oldDataBasedOnKey.data.length;
+        var oldDataBasedOnKey = JSON.parse(creditDebitValues.value); 
+
+        if(oldDataBasedOnKey == null) {
+          await Capacitor.Plugins.Preferences.set({
+            key: keyToRead,
+            value : '{ "data": [] }'
+          });
+
+          creditDebitValues = await Capacitor.Plugins.Preferences.get({
+            key: keyToRead
+          });
+
+          oldDataBasedOnKey = JSON.parse(creditDebitValues.value);
+        }
+
+        var totalLength = oldDataBasedOnKey?.data?.length ?? 0;
 
         var jsonObject = {
             id: ++totalLength,
@@ -374,14 +391,36 @@
             description: description
         }
 
-        console.log(jsonObject);
+        oldDataBasedOnKey.data.push(jsonObject);
+
+        await Capacitor.Plugins.Preferences.set({
+          key: keyToRead,
+          value : JSON.stringify(oldDataBasedOnKey)
+        });
       } 
       else if(itemType == '2') 
       {
-        var oldDataBasedOnKey = { data: []};  // reading from `keyToRead`
+        var netbankingValues = await Capacitor.Plugins.Preferences.get({
+          key: keyToRead
+        });
 
-        var totalLength = oldDataBasedOnKey.data.length;
+        var oldNetbankingDataBasedOnKey = JSON.parse(netbankingValues.value); 
 
+        if(oldNetbankingDataBasedOnKey == null) {
+          await Capacitor.Plugins.Preferences.set({
+            key: keyToRead,
+            value : '{ "data": [] }'
+          });
+
+          netbankingValues = await Capacitor.Plugins.Preferences.get({
+            key: keyToRead
+          });
+
+          oldNetbankingDataBasedOnKey = JSON.parse(netbankingValues.value);
+        } 
+
+        var totalLength = oldNetbankingDataBasedOnKey?.data?.length ?? 0;
+        
         var netbankingJSONObject = {
             id: ++totalLength,
             type: GetItemTypeName(itemType),
@@ -399,31 +438,54 @@
             description: description
         }
 
-        console.log(netbankingJSONObject);
+        oldNetbankingDataBasedOnKey.data.push(netbankingJSONObject);
 
-        // Push this to preferences
+        await Capacitor.Plugins.Preferences.set({
+          key: keyToRead,
+          value : JSON.stringify(oldNetbankingDataBasedOnKey)
+        });
       } 
       else if(itemType == '3')
       {
-        var oldDataBasedOnKey = { data: []};  // reading from `keyToRead`
+        var loginValues = await Capacitor.Plugins.Preferences.get({
+          key: keyToRead
+        });
 
-        var totalLength = oldDataBasedOnKey.data.length;
+        var loginDataBasedOnKey = JSON.parse(loginValues.value); 
 
+        if(loginDataBasedOnKey == null) {
+          await Capacitor.Plugins.Preferences.set({
+            key: keyToRead,
+            value : '{ "data": [] }'
+          });
+
+          loginValues = await Capacitor.Plugins.Preferences.get({
+            key: keyToRead
+          });
+
+          loginDataBasedOnKey = JSON.parse(loginValues.value);
+        } 
+
+        var totalLength = oldNetbankingDataBasedOnKey?.data?.length ?? 0;
+        
         var loginJSONObject = {
           type: GetItemTypeName(itemType),
           name: loginName,
           userId: username,
-          loginPssword: password,
+          loginPassword: password,
           description: description
         }
 
-        console.log(loginJSONObject);
+        loginDataBasedOnKey.data.push(loginJSONObject);
 
-        // push to preferences
+        await Capacitor.Plugins.Preferences.set({
+          key: keyToRead,
+          value : JSON.stringify(loginDataBasedOnKey)
+        });
 
       }
 
-      alert("Form submitted!");
+      alert("Saved successfully !!!");
     }
 
     function GetItemTypeName(value){
