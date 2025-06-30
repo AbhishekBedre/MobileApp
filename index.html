@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
   <link rel="stylesheet" href="css/common.css" />
+  <script type="text/javascript" src="js/app.js"></script>
 
   <style>
     
@@ -127,13 +128,13 @@
     }
 
     .footer {
-      font-size: 12px;
-      color: #aaa;
       margin-top: 24px;
     }
   </style>
+
 </head>
-<body>    
+<body>  
+
   <div class="card">
     <div class="title" id="title">Secure Vault</div>
 
@@ -171,6 +172,11 @@
 
     <!-- <img id="photo" style="width: 100%; margin-top: 10px;" /> -->
   </div>
+    
+  <!-- Loader -->
+  <div id="loaderOverlay" class="loader-overlay">
+    <div class="loader-spinner"></div>
+  </div>
 
   <script>
     let isCreating = false;
@@ -204,16 +210,23 @@
     }
 
     async function handleSubmit() {
+      showLoader();
+
       const pin = [...Array(4).keys()].map(i => document.getElementById(`pin${i}`).value).join('');
       if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
-        alert("Please enter a valid 4-digit PIN.");
+        hideLoader();
+        await showMessage('Invalid !', 'Please enter a valid 4-digit PIN.');
         return;
       }
 
       if (isCreating) {
+        showLoader();
+
         const mobile = document.getElementById("new-mobile").value.trim();
         if (!mobile || !/^\d{10}$/.test(mobile)) {
-          alert("Please enter a valid 10-digit mobile number.");
+          hideLoader();
+
+          await showMessage('Invalid !', 'Please enter a valid 10-digit mobile number.');
           return;
         }
 
@@ -228,7 +241,12 @@
           value: JSON.stringify(authObject)
         });
 
-        alert(`✅ Account created for mobile number ${mobile} with PIN ${pin}`);
+        document.getElementById("auth-form").reset();
+
+        hideLoader();
+
+        await showMessage('Success !', 'Account creaed successfully.');
+
       } else {
         
         var authData = await Capacitor.Plugins.Preferences.get({
@@ -238,37 +256,18 @@
         var authValues = JSON.parse(authData.value); 
         
         if(authValues?.pin == pin) {
+          sessionStorage.isAuthenticated = true;
           window.location.href = "home.html";
         } else {
-          alert('Invalid PIN');
+          hideLoader();
+          sessionStorage.isAuthenticated = false;
+          await showMessage('Oops!', 'Invalid PIN.');
         }
       }
 
       // Clear PIN fields
       for (let i = 0; i < 4; i++) document.getElementById(`pin${i}`).value = '';
     }
-  </script>
-
-  <script>
-      document.getElementById('takePictureBtn').addEventListener('click', async () => {
-          try {
-              const photo = await Capacitor.Plugins.Camera.getPhoto({
-                  quality: 90,
-                  allowEditing: false,
-                  resultType: 'dataUrl',  // You can also use Base64 or Uri
-                  source: 'CAMERA'
-              });
-
-              // Display the photo
-              const imageElement = document.getElementById('photo');
-              imageElement.src = photo.dataUrl;
-
-              // If you want the raw data:
-              // console.log(photo);
-          } catch (error) {
-              alert('Camera error:', error.message);
-          }
-      });
   </script>
 
 </body>

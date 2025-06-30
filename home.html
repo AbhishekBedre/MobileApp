@@ -11,22 +11,12 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
 
   <link rel="stylesheet" href="css/common.css" />
+  <script type="text/javascript" src="js/app.js"></script>
   
   <style>
 
     * {
       box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Poppins', sans-serif;
-      margin: 0;
-      background-color: var(--background-color);
-      color: var(--text-color);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
     }
 
     /* Header */
@@ -292,7 +282,6 @@
         background-color: #0097a7;
     }
 
-
   </style>
 
 </head>
@@ -329,6 +318,11 @@
     </button>
   </main>
 
+  <!-- Loader -->
+  <div id="loaderOverlay" class="loader-overlay">
+    <div class="loader-spinner"></div>
+  </div>
+
   <script>
     var cardData = [];
     
@@ -343,6 +337,12 @@
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
+      showLoader();
+
+      if(sessionStorage.isAuthenticated == undefined || sessionStorage.isAuthenticated == false) {
+        window.location.href = "index.html";
+      }
+
       sidePanel.classList.remove('open');
       mainContent.classList.remove('shifted');
 
@@ -438,6 +438,7 @@
       
       // Initial render
       renderCards();
+      hideLoader();
 
     });
 

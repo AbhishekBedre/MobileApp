@@ -11,22 +11,12 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
 
   <link rel="stylesheet" href="css/common.css" />
-  
+  <script type="text/javascript" src="js/app.js"></script>
+
   <style>    
 
     * {
       box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Poppins', sans-serif;
-      margin: 0;
-      background-color: var(--background-color);
-      color: var(--text-color);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
     }
 
     /* Header */
@@ -123,7 +113,7 @@
         margin-bottom: 24px;
     }
 
-    input[type="text"], input[type="email"] {
+    input[type="text"], input[type="email"], input[type="number"] {
         width: 100%;
         padding: 12px 16px;
         border: 2px solid var(--secondary-color);
@@ -155,13 +145,6 @@
         background-color: #0277bd;
     }
 
-    .footer {
-        font-size: 12px;
-        color: #aaa;
-        margin: 24px auto 0px auto;
-    }
-
-
   </style>
 </head>
 <body>
@@ -175,12 +158,12 @@
 
   <main id="mainContent">
     <div class="card">
-      <img src="https://placehold.co/120X120" alt="Profile Image" class="profile-img" />
+      <img src="https://placehold.co/120X120" alt="Profile Image" id="takePictureBtn" class="profile-img" />
 
       <form onsubmit="event.preventDefault(); saveProfile();">
-          <input type="text" id="name" placeholder="Full Name" value="John Doe" />
-          <input type="email" id="email" placeholder="Email" value="john.doe@example.com" />
-          <input type="text" id="mobile" placeholder="Mobile Number" value="9876543210" maxlength="10" />
+          <input type="text" id="name" placeholder="Full Name" />
+          <input type="email" id="email" placeholder="Email" />
+          <input type="number" id="mobile" placeholder="Mobile Number" maxlength="10" />
 
           <button class="save-button" type="submit">
               <span>Save</span>
@@ -192,59 +175,97 @@
     </div>
   </main>
 
+  <!-- Loader -->
+  <div id="loaderOverlay" class="loader-overlay">
+    <div class="loader-spinner"></div>
+  </div>
+
   <script>
 
-    function goBack() {
-      window.history.back();
+    window.addEventListener('DOMContentLoaded', async () => {
+      
+      showLoader();
+
+      if(sessionStorage.isAuthenticated == undefined || sessionStorage.isAuthenticated == false) {
+        logout('index.html');
+      }
+
+      var profile = await Capacitor.Plugins.Preferences.get({
+        key: "Profile"
+      });
+
+      try {
+        var profileObj = JSON.parse(profile.value);
+
+        if(profileObj != null) 
+        {
+          document.getElementById('name').value = profileObj.name;
+          document.getElementById('email').value = profileObj.email;
+          document.getElementById('mobile').value = profileObj.mobile;
+          const imageElement = document.getElementById('takePictureBtn');
+          imageElement.src = profileObj.image;
+        }
+
+        hideLoader();
+      } 
+      catch(ex) 
+      {
+        hideLoader();
+        await showMessage('Oops !', 'Error while profile loading. \n' + ex.message);
+      }
+
+    });
+
+    async function saveProfile() {
+      showLoader();
+
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const mobile = document.getElementById('mobile').value;
+      const imageElement = document.getElementById('takePictureBtn');
+
+      var profileObj = {
+        name: name,
+        email: email,
+        mobile: mobile,
+        image: imageElement.src
+      };
+
+      await Capacitor.Plugins.Preferences.set({
+        key: "Profile",
+        value: JSON.stringify(profileObj)
+      });
+
+      hideLoader();
+
+      await showMessage('Success !', 'Profile saved successfully.');
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      sidePanel.classList.remove('open');
-      mainContent.classList.remove('shifted');
-    });
+    document.getElementById('takePictureBtn').addEventListener('click', async () => {
+      showLoader();
 
-    const hamburger = document.getElementById('hamburger');
-    const sidePanel = document.getElementById('sidePanel');
-    const mainContent = document.getElementById('mainContent');
+      try {
+        const photo = await Capacitor.Plugins.Camera.getPhoto({
+            quality: 100,
+            allowEditing: false,
+            resultType: 'Base64',  // You can also use Base64 or Uri
+            source: 'CAMERA'
+        });
 
-    // Ensure menu is closed initially
-    sidePanel.classList.remove('open');
-    mainContent.classList.remove('shifted');
+        // Display the photo
+        const base64Image = `data:image/jpeg;base64,${photo.base64String}`;
 
-    hamburger.addEventListener('click', () => {
-      sidePanel.classList.toggle('open');
-      mainContent.classList.toggle('shifted');
-    });
-
-    // Accessibility: allow keyboard toggle for hamburger
-    hamburger.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        hamburger.click();
-      }
-    });
-
-    // Close menu if click outside side panel or hamburger
-    document.addEventListener('click', (e) => {
-      if (
-        sidePanel.classList.contains('open') &&
-        !sidePanel.contains(e.target) &&
-        !hamburger.contains(e.target)
-      ) {
-        sidePanel.classList.remove('open');
-        mainContent.classList.remove('shifted');
-      }
-    });
-
-    // Close menu on Escape key press
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && sidePanel.classList.contains('open')) {
-        sidePanel.classList.remove('open');
-        mainContent.classList.remove('shifted');
+        const imageElement = document.getElementById('takePictureBtn');
+        imageElement.src = base64Image;
+        hideLoader();
+      } 
+      catch (error) 
+      {
+        hideLoader();
+        await showMessage('App crashed !', 'Camera error:', error.message);
       }
     });
 
   </script>
-
 </body>
 </html>

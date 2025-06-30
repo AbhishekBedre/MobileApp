@@ -11,22 +11,12 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
 
   <link rel="stylesheet" href="css/common.css" />
+  <script type="text/javascript" src="js/app.js"></script>
   
   <style>
 
     * {
       box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Poppins', sans-serif;
-      margin: 0;
-      background-color: var(--background-color);
-      color: var(--text-color);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
     }
 
     /* Header */
@@ -185,13 +175,6 @@
       filter: invert(1);
     }
 
-    .footer {
-        font-size: 12px;
-        color: #aaa;
-        margin: 24px auto 0px auto;
-    }
-
-
   </style>
 </head>
 <body>
@@ -227,15 +210,23 @@
       <div class="footer">© 2025 SecureVault</div>
     </div>
   </main>
+
+  <!-- Loader -->
+  <div id="loaderOverlay" class="loader-overlay">
+    <div class="loader-spinner"></div>
+  </div>
+
   <script>
 
     window.addEventListener('DOMContentLoaded', () => {
-      renderForm();
-    });
+      showLoader();
 
-    function goBack() {
-      window.history.back();
-    }
+      if(sessionStorage.isAuthenticated == undefined || sessionStorage.isAuthenticated == false) {
+        logout('index.html');
+      }
+      renderForm();
+      hideLoader();
+    });
 
     function renderForm() {
       const itemType = document.getElementById('item-type').value;
@@ -302,6 +293,7 @@
     }
   
     async function handleSubmit() {      
+      showLoader();
 
       const itemType = document.getElementById('item-type').value;
 
@@ -485,7 +477,13 @@
 
       }
 
-      alert("Saved successfully !!!");
+      document.getElementById("dynamic-form").reset();
+
+      hideLoader();
+
+      await showMessage('Success !', 'Details saved successfully.');
+
+      window.location.href = 'home.html';
     }
 
     function GetItemTypeName(value){
