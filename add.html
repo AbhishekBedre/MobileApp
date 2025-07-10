@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
 
   <link rel="stylesheet" href="css/common.css" />
-  <script type="text/javascript" src="js/app.js"></script>
+  <script type="text/javascript" src="js/app.js" defer></script>
   
   <style>
 
@@ -218,14 +218,22 @@
 
   <script>
 
-    window.addEventListener('DOMContentLoaded', () => {
-      showLoader();
+    window.addEventListener('load', async () => {
+      if (window.Capacitor) {
+        showLoader();
 
-      if(sessionStorage.isAuthenticated == undefined || sessionStorage.isAuthenticated == false) {
-        logout('index.html');
+        if(sessionStorage.isAuthenticated == undefined || sessionStorage.isAuthenticated == false) {
+          logout('index.html');
+        }
+
+        renderForm();
+
+        await prefillFormFromPreferences().then(hideLoader);
+
       }
-      renderForm();
-      hideLoader();
+      else {
+        await showMessage('Crashed !', 'Error while loading capacitor plugins. Please contact application developer.');
+      }
     });
 
     function renderForm() {
@@ -268,18 +276,18 @@
           ${input('custom-id', 'Custom ID')}
           ${input('reg-mobile', 'Registered Mobile Number', 'number')}
           ${input('user-id', 'User ID')}
-          ${input('login-pass', 'Login Password', 'password')}
-          ${input('txn-pass', 'Transaction Password', 'password')}
-          ${input('profile-pass', 'Profile Password', 'password')}
+          ${input('login-pass', 'Login Password')}
+          ${input('txn-pass', 'Transaction Password')}
+          ${input('profile-pass', 'Profile Password')}
           ${input('mobile-username', 'Mobile Username')}
-          ${input('mobile-pin', 'Mobile PIN', 'password', true)}
+          ${input('mobile-pin', 'Mobile PIN', 'text', true)}
           ${input('description', 'Description')}
         `;
       } else if (itemType === '3') {
         formFields.innerHTML = `
           ${input('login-name', 'Name')}
           ${input('username', 'Username')}
-          ${input('password', 'Password', 'password')}
+          ${input('password', 'Password')}
           ${input('description', 'Description')}
         `;
       }
@@ -291,199 +299,355 @@
       }, 0);
 
     }
-  
-    async function handleSubmit() {      
-      showLoader();
 
-      const itemType = document.getElementById('item-type').value;
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
 
-      if(itemType == '0' || itemType == '1') {
-        var cardType = document.getElementById('card-type').value;
-        var cardHolderName = document.getElementById('card-holder').value;
-        var bankName = document.getElementById('bank-name').value;
-        var cardNo = document.getElementById('card-no').value;
-        var expMonth = document.getElementById('exp-month').value;
-        var expYear = document.getElementById('exp-year').value;
-        var cvv = document.getElementById('cvv').value;
-        var cardLimit = document.getElementById('limit').value;
-        var billDate = document.getElementById('bill-date').value;
-        var description = document.getElementById('description').value;
+    function getCardTypeValue(name) {
+      switch (name) {
+        case 'Visa': return '0';
+        case 'Master': return '1';
+        case 'Rupay': return '2';
+        case 'American Express': return '3';
+        case 'Pluxee': return '4';
+        default: return '';
       }
+    }
 
-      var keyToRead = "CreditCards";
-      // Read the older credit card using "CreditCards" key  
-      if(itemType == '0')
-        keyToRead = "CreditCards";        
-      else if(itemType == '1')
-        keyToRead = "DebitCards";
-      else if(itemType == '2') {
-        keyToRead= "Netbankings";
+    async function prefillFormFromPreferences() {
+      debugger;
+      try {
+        const id = parseInt(getQueryParam('id'));
+        const typeId = parseInt(getQueryParam('type'));
 
-        var accountHolderName = document.getElementById('acc-holder').value;
-        var bankName = document.getElementById('bank-name').value;
-        var accountNo = document.getElementById('acc-no').value;
-        var customId = document.getElementById('custom-id').value;
-        var regMobile = document.getElementById('reg-mobile').value;
-        var userId = document.getElementById('user-id').value;
-        var loginPassword = document.getElementById('login-pass').value;
-        var txnPassword = document.getElementById('txn-pass').value;
-        var profilePassword = document.getElementById('profile-pass').value;
-        var mobileUsername = document.getElementById('mobile-username').value;
-        var mobilePIN = document.getElementById('mobile-pin').value;
-        var description = document.getElementById('description').value;
+        if(!id || (typeId == null || typeId == undefined || typeId < 0)) return;
+
+        const key = getStorageKeyFromType(typeId);
+        if (!key) return;
+
+        const { value } = await Capacitor.Plugins.Preferences.get({ key });
+        const parsed = JSON.parse(value);
+        const data = parsed?.data ?? [];
+        const record = data.find(item => item.id === id);
+
+        if (!record) return;
+
+        // Set dropdown value
+        const itemTypeMap = [
+          'Credit Card',
+          'Debit Card',
+          'Netbanking',
+          'Login',
+          'Reminder'
+        ];
+
+        document.getElementById('item-type').value = typeId;
+        renderForm(); // re-render fields
+
+        setTimeout(() => {
+          debugger;
+          if (itemTypeMap[typeId] === 'Credit Card' || itemTypeMap[typeId] === 'Debit Card') {
+            document.getElementById('card-type').value = getCardTypeValue(record.cardType);
+            document.getElementById('card-holder').value = record.name;
+            document.getElementById('bank-name').value = record.bankName;
+            document.getElementById('card-no').value = record.cardNo;
+            document.getElementById('exp-month').value = record.expiryMonth;
+            document.getElementById('exp-year').value = record.expiryYear;
+            document.getElementById('cvv').value = record.cvv;
+            document.getElementById('limit').value = record.cardLimit;
+            document.getElementById('bill-date').value = record.billingDate;
+            document.getElementById('description').value = record.description;
+          } else if (itemTypeMap[typeId] === 'Netbanking') {
+            document.getElementById('acc-holder').value = record.name;
+            document.getElementById('bank-name').value = record.bankName;
+            document.getElementById('acc-no').value = record.accountNo;
+            document.getElementById('custom-id').value = record.customerId;
+            document.getElementById('reg-mobile').value = record.mobileNo;
+            document.getElementById('user-id').value = record.userId;
+            document.getElementById('login-pass').value = record.loginPassword;
+            document.getElementById('txn-pass').value = record.transactionPassword;
+            document.getElementById('profile-pass').value = record.profilePassword;
+            document.getElementById('mobile-username').value = record.mobileUsername;
+            document.getElementById('mobile-pin').value = record.mobilePIN;
+            document.getElementById('description').value = record.description;
+          } else if (itemTypeMap[typeId] === 'Login') {
+            document.getElementById('login-name').value = record.name;
+            document.getElementById('username').value = record.userId;
+            document.getElementById('password').value = record.loginPassword;
+            document.getElementById('description').value = record.description;
+          }
+
+          const select = document.getElementById('item-type');
+          const selectedText = select.options[select.selectedIndex].text;
+
+          document.getElementById('btnSaveTxt').innerText = 'Update ' + selectedText;
+
+        }, 100); // wait for renderForm
+      } catch (e) {
+        await showMessage('Crashed !!!', 'Error reading from Preferences: ' + e.message);
       }
-      else if(itemType == '3') {
-        keyToRead = "Logins";
+    }
 
-        var loginName = document.getElementById('login-name').value;
-        var username = document.getElementById('username').value;
-        var password = document.getElementById('password').value;
-        var description = document.getElementById('description').value;        
-      }
-      else if(itemType == '4')
-        keyToRead = "Reminders";
-      else 
-        keyToRead = "None";
+    async function handleSubmit() {  
 
-      if(itemType == '0' || itemType == '1') 
-      {
-        var creditDebitValues = await Capacitor.Plugins.Preferences.get({
-          key: keyToRead
-        });
+      try {
 
-        var oldDataBasedOnKey = JSON.parse(creditDebitValues.value); 
+        let isUpdate = true;
+        const id = parseInt(getQueryParam('id'));
+        const typeId = parseInt(getQueryParam('type'));
 
-        if(oldDataBasedOnKey == null) {
-          await Capacitor.Plugins.Preferences.set({
-            key: keyToRead,
-            value : '{ "data": [] }'
-          });
+        if (!id || !typeId) {
+          isUpdate = false;
+        }
 
-          creditDebitValues = await Capacitor.Plugins.Preferences.get({
+        showLoader();
+
+        const itemType = document.getElementById('item-type').value;
+
+        if(itemType == '0' || itemType == '1') {
+          var cardType = document.getElementById('card-type').value;
+          var cardHolderName = document.getElementById('card-holder').value;
+          var bankName = document.getElementById('bank-name').value;
+          var cardNo = document.getElementById('card-no').value;
+          var expMonth = document.getElementById('exp-month').value;
+          var expYear = document.getElementById('exp-year').value;
+          var cvv = document.getElementById('cvv').value;
+          var cardLimit = document.getElementById('limit').value;
+          var billDate = document.getElementById('bill-date').value;
+          var description = document.getElementById('description').value;
+        }
+
+        var keyToRead = "CreditCards";
+        // Read the older credit card using "CreditCards" key  
+        if(itemType == '0')
+          keyToRead = "CreditCards";        
+        else if(itemType == '1')
+          keyToRead = "DebitCards";
+        else if(itemType == '2') {
+          keyToRead= "Netbankings";
+
+          var accountHolderName = document.getElementById('acc-holder').value;
+          var bankName = document.getElementById('bank-name').value;
+          var accountNo = document.getElementById('acc-no').value;
+          var customId = document.getElementById('custom-id').value;
+          var regMobile = document.getElementById('reg-mobile').value;
+          var userId = document.getElementById('user-id').value;
+          var loginPassword = document.getElementById('login-pass').value;
+          var txnPassword = document.getElementById('txn-pass').value;
+          var profilePassword = document.getElementById('profile-pass').value;
+          var mobileUsername = document.getElementById('mobile-username').value;
+          var mobilePIN = document.getElementById('mobile-pin').value;
+          var description = document.getElementById('description').value;
+        }
+        else if(itemType == '3') {
+          keyToRead = "Logins";
+
+          var loginName = document.getElementById('login-name').value;
+          var username = document.getElementById('username').value;
+          var password = document.getElementById('password').value;
+          var description = document.getElementById('description').value;        
+        }
+        else if(itemType == '4')
+          keyToRead = "Reminders";
+        else 
+          keyToRead = "None";
+
+        if(itemType == '0' || itemType == '1') 
+        {
+          var creditDebitValues = await Capacitor.Plugins.Preferences.get({
             key: keyToRead
           });
 
-          oldDataBasedOnKey = JSON.parse(creditDebitValues.value);
-        }
+          var oldDataBasedOnKey = JSON.parse(creditDebitValues.value); 
 
-        var totalLength = oldDataBasedOnKey?.data?.length ?? 0;
+          if(oldDataBasedOnKey == null) {
+            await Capacitor.Plugins.Preferences.set({
+              key: keyToRead,
+              value : '{ "data": [] }'
+            });
 
-        var jsonObject = {
-            id: ++totalLength,
-            type: GetItemTypeName(itemType),
-            cardType: GetCardTypeName(cardType),
-            name: cardHolderName,
-            bankName: bankName,
-            cardNo: cardNo,          
-            expiryMonth: expMonth,
-            expiryYear: expYear,
-            cvv: cvv,
-            cardLimit: cardLimit,
-            billingDate: billDate,
-            description: description
-        }
+            creditDebitValues = await Capacitor.Plugins.Preferences.get({
+              key: keyToRead
+            });
 
-        oldDataBasedOnKey.data.push(jsonObject);
+            oldDataBasedOnKey = JSON.parse(creditDebitValues.value);
+          }
 
-        await Capacitor.Plugins.Preferences.set({
-          key: keyToRead,
-          value : JSON.stringify(oldDataBasedOnKey)
-        });
-      } 
-      else if(itemType == '2') 
-      {
-        var netbankingValues = await Capacitor.Plugins.Preferences.get({
-          key: keyToRead
-        });
+          var totalLength = oldDataBasedOnKey?.data?.length ?? 0;
 
-        var oldNetbankingDataBasedOnKey = JSON.parse(netbankingValues.value); 
+          var jsonObject  = {};
 
-        if(oldNetbankingDataBasedOnKey == null) {
+          if(isUpdate == true) {
+            var recordToUpdate = oldNetbankingDataBasedOnKey.data.find(x => x.id === id);
+            recordToUpdate.cardType = GetCardTypeName(cardType);
+            recordToUpdate.name = cardHolderName;
+            recordToUpdate.bankName = bankName;
+            recordToUpdate.cardNo = cardNo;
+            recordToUpdate.expiryMonth = expMonth;
+            recordToUpdate.expiryYear = expYear;
+            recordToUpdate.cvv = cvv;
+            recordToUpdate.cardLimit = cardLimit;
+            recordToUpdate.billDate = billDate;
+            recordToUpdate.description = description;
+          }
+          else {
+
+            jsonObject = {
+                id: ++totalLength,
+                type: GetItemTypeName(itemType),
+                cardType: GetCardTypeName(cardType),
+                name: cardHolderName,
+                bankName: bankName,
+                cardNo: cardNo,
+                expiryMonth: expMonth,
+                expiryYear: expYear,
+                cvv: cvv,
+                cardLimit: cardLimit,
+                billingDate: billDate,
+                description: description
+            }
+
+            oldDataBasedOnKey.data.push(jsonObject);
+          }
+
           await Capacitor.Plugins.Preferences.set({
             key: keyToRead,
-            value : '{ "data": [] }'
+            value : JSON.stringify(oldDataBasedOnKey)
           });
-
-          netbankingValues = await Capacitor.Plugins.Preferences.get({
-            key: keyToRead
-          });
-
-          oldNetbankingDataBasedOnKey = JSON.parse(netbankingValues.value);
         } 
-
-        var totalLength = oldNetbankingDataBasedOnKey?.data?.length ?? 0;
-        
-        var netbankingJSONObject = {
-            id: ++totalLength,
-            type: GetItemTypeName(itemType),
-            name: accountHolderName,
-            bankName: bankName,
-            accountNo: accountNo,
-            customerId: customId,
-            mobileNo: regMobile,
-            userId: userId,
-            loginPssword: loginPassword,
-            profilePassword: profilePassword,
-            transactionPassword: txnPassword,
-            mobileUsername: mobileUsername,
-            mobilePIN: mobilePIN,
-            description: description
-        }
-
-        oldNetbankingDataBasedOnKey.data.push(netbankingJSONObject);
-
-        await Capacitor.Plugins.Preferences.set({
-          key: keyToRead,
-          value : JSON.stringify(oldNetbankingDataBasedOnKey)
-        });
-      } 
-      else if(itemType == '3')
-      {
-        var loginValues = await Capacitor.Plugins.Preferences.get({
-          key: keyToRead
-        });
-
-        var loginDataBasedOnKey = JSON.parse(loginValues.value); 
-
-        if(loginDataBasedOnKey == null) {
-          await Capacitor.Plugins.Preferences.set({
-            key: keyToRead,
-            value : '{ "data": [] }'
-          });
-
-          loginValues = await Capacitor.Plugins.Preferences.get({
+        else if(itemType == '2') 
+        {
+          var netbankingValues = await Capacitor.Plugins.Preferences.get({
             key: keyToRead
           });
 
-          loginDataBasedOnKey = JSON.parse(loginValues.value);
-        } 
+          var oldNetbankingDataBasedOnKey = JSON.parse(netbankingValues.value); 
 
-        var totalLength = oldNetbankingDataBasedOnKey?.data?.length ?? 0;
-        
-        var loginJSONObject = {
-          type: GetItemTypeName(itemType),
-          name: loginName,
-          userId: username,
-          loginPassword: password,
-          description: description
+          if(oldNetbankingDataBasedOnKey == null) {
+            await Capacitor.Plugins.Preferences.set({
+              key: keyToRead,
+              value : '{ "data": [] }'
+            });
+
+            netbankingValues = await Capacitor.Plugins.Preferences.get({
+              key: keyToRead
+            });
+
+            oldNetbankingDataBasedOnKey = JSON.parse(netbankingValues.value);
+          } 
+
+          var totalLength = oldNetbankingDataBasedOnKey?.data?.length ?? 0;
+          
+          var netbankingJSONObject = {};
+
+          if(isUpdate == true) {
+            var recordToUpdate = oldNetbankingDataBasedOnKey.data.find(x => x.id === id);
+            recordToUpdate.name = accountHolderName;
+            recordToUpdate.bankName = bankName;
+            recordToUpdate.accountNo = accountNo;
+            recordToUpdate.customerId = customId;
+            recordToUpdate.mobileNo = regMobile;
+            recordToUpdate.userId = userId;
+            recordToUpdate.loginPassword = loginPassword;
+            recordToUpdate.profilePassword = profilePassword;
+            recordToUpdate.transactionPassword = txnPassword;
+            recordToUpdate.mobileUsername = mobileUsername;
+            recordToUpdate.mobilePIN = mobilePIN;
+            recordToUpdate.description = description;
+          }
+          else {
+
+            netbankingJSONObject = {
+                id: ++totalLength,
+                type: GetItemTypeName(itemType),
+                name: accountHolderName,
+                bankName: bankName,
+                accountNo: accountNo,
+                customerId: customId,
+                mobileNo: regMobile,
+                userId: userId,
+                loginPassword: loginPassword,
+                profilePassword: profilePassword,
+                transactionPassword: txnPassword,
+                mobileUsername: mobileUsername,
+                mobilePIN: mobilePIN,
+                description: description
+            }
+
+            oldNetbankingDataBasedOnKey.data.push(netbankingJSONObject);
+          }
+          await Capacitor.Plugins.Preferences.set({
+            key: keyToRead,
+            value : JSON.stringify(oldNetbankingDataBasedOnKey)
+          });
+        } 
+        else if(itemType == '3')
+        {
+          var loginValues = await Capacitor.Plugins.Preferences.get({
+            key: keyToRead
+          });
+
+          var loginDataBasedOnKey = JSON.parse(loginValues.value); 
+
+          if(loginDataBasedOnKey == null) {
+            await Capacitor.Plugins.Preferences.set({
+              key: keyToRead,
+              value : '{ "data": [] }'
+            });
+
+            loginValues = await Capacitor.Plugins.Preferences.get({
+              key: keyToRead
+            });
+
+            loginDataBasedOnKey = JSON.parse(loginValues.value);
+          } 
+
+          var totalLength = loginDataBasedOnKey?.data?.length ?? 0;
+          
+          var loginJSONObject = {};
+
+          if(isUpdate == true) {
+
+            var recordToUpdate = loginDataBasedOnKey.data.find(x => x.id === id);
+            recordToUpdate.name = loginName;
+            recordToUpdate.userId = username;
+            recordToUpdate.loginPassword = password;
+            recordToUpdate.description = description;
+
+          } else {
+
+            loginJSONObject = {
+              id: ++totalLength,
+              type: GetItemTypeName(itemType),
+              name: loginName,
+              userId: username,
+              loginPassword: password,
+              description: description
+            }
+
+            loginDataBasedOnKey.data.push(loginJSONObject);
+          }
+
+          await Capacitor.Plugins.Preferences.set({
+            key: keyToRead,
+            value : JSON.stringify(loginDataBasedOnKey)
+          });
+
         }
 
-        loginDataBasedOnKey.data.push(loginJSONObject);
+        document.getElementById("dynamic-form").reset();
 
-        await Capacitor.Plugins.Preferences.set({
-          key: keyToRead,
-          value : JSON.stringify(loginDataBasedOnKey)
-        });
+        hideLoader();
 
+        await showMessage('Success !', 'Details saved successfully.');
+
+        window.location.href = 'home.html';
       }
-
-      document.getElementById("dynamic-form").reset();
-
-      hideLoader();
-
-      await showMessage('Success !', 'Details saved successfully.');
-
-      window.location.href = 'home.html';
+      catch(ex) {
+        await showMessage('Crashed !!', ex.message);
+      }
     }
 
     function GetItemTypeName(value){
@@ -555,7 +719,7 @@
           customerId: "37516352",
           mobileNo: "8530209649",
           userId: "37516352",
-          loginPssword: "Test",
+          loginPassword: "Test",
           profilePassword: "Test",
           transactionPassword: "",
           mobileUsername: "",
@@ -567,7 +731,7 @@
           type: "Login",
           name: "Alice Johnson",
           userId: "37516352",
-          loginPssword: "Test",
+          loginPassword: "Test",
           description: "This is gmail login details."
         },
         {

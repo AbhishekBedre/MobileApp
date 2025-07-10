@@ -327,120 +327,114 @@
     var cardData = [];
     
     function cardClick(ctrlReff){
-      console.log(ctrlReff);
       var type = ctrlReff.getAttribute("type");
-      window.location.href = "add.html?id=" + type;
+      var dataId = ctrlReff.getAttribute("dataid");
+      window.location.href = "add.html?id=" + dataId + "&type=" + type;
     }
 
     function addItem() {
       window.location.href = "add.html";
     }
 
-    window.addEventListener('DOMContentLoaded', async () => {
-      showLoader();
+    window.addEventListener('load', async () => {
 
-      if(sessionStorage.isAuthenticated == undefined || sessionStorage.isAuthenticated == false) {
-        window.location.href = "index.html";
-      }
+      if(window.Capacitor) {
 
-      sidePanel.classList.remove('open');
-      mainContent.classList.remove('shifted');
+        Capacitor.Plugins.App.addListener('backButton', ({ canGoBack }) => {
+          if(canGoBack) {
+            console.log("Reloading page");
+            window.location.reload();
+          } else {
+            console.log("Can not log back");
+          }
+        });
 
-      var creditCardData = await Capacitor.Plugins.Preferences.get({
-        key: "CreditCards"
-      });
+        try {
 
-      var creditCardValues = JSON.parse(creditCardData.value); 
+          showLoader();
 
-      var debitCardData = await Capacitor.Plugins.Preferences.get({
-        key: "DebitCards"
-      });
+          if(sessionStorage.isAuthenticated == undefined || sessionStorage.isAuthenticated == false) {
+            window.location.href = "index.html";
+          }
 
-      var debitCardValues = JSON.parse(debitCardData.value); 
+          sidePanel.classList.remove('open');
+          mainContent.classList.remove('shifted');          
 
-      var netbankingsData = await Capacitor.Plugins.Preferences.get({
-        key: "Netbankings"
-      });
+          const [creditCardValues, debitCardValues, netbankingsValues, loginsValues] = await Promise.all([
+            getJSONPref("CreditCards"),
+            getJSONPref("DebitCards"),
+            getJSONPref("Netbankings"),
+            getJSONPref("Logins")
+          ]);
 
-      var netbankingsValues = JSON.parse(netbankingsData.value); 
+          creditCardValues?.data?.length > 0 ? cardData.push(...creditCardValues.data) : '';
+          debitCardValues?.data?.length > 0 ? cardData.push(...debitCardValues.data) : '';
+          netbankingsValues?.data?.length > 0 ? cardData.push(...netbankingsValues.data) : '';
+          loginsValues?.data?.length > 0 ? cardData.push(...loginsValues.data) : '';
+          
+          // Initial render
+          renderCards();
+          hideLoader();
 
-      var loginsData = await Capacitor.Plugins.Preferences.get({
-        key: "Logins"
-      });
-
-      var loginsValues = JSON.parse(loginsData.value);
-
-      cardData = [
+        } 
+        catch(error) 
         {
-          type: "Credit Card",
-          cardNo: "1234 5678 9012 3456",
-          name: "Alice Johnson",
-          cvv: "123",
-          expiry: "12/26",
-          bankName: "Chase Bank",
-          cardType: "Visa",
-          description: "This is gmail login details."
-        },
-        {
-          type: "Debit Card",
-          cardNo: "9876 5432 1098 7654",
-          name: "Bob Smith",
-          cvv: "456",
-          expiry: "11/25",
-          bankName: "Wells Fargo",
-          cardType: "MasterCard",
-          description: "This is gmail login details."
-        },
-        {
-          type: "Netbanking",
-          cardNo: "1567 1050 0135 40",
-          name: "Charlie Davis",
-          cvv: "",
-          expiry: "",
-          bankName: "Bank of America",
-          cardType: "NetBanking",
-          description: "This is gmail login details."
-        },
-        {
-          type: "Credit Card",
-          cardNo: "4444 3333 2222 1111",
-          name: "Diana Prince",
-          cvv: "321",
-          expiry: "09/24",
-          bankName: "Citibank",
-          cardType: "RuPay",
-          description: "This is gmail login details."
-        },
-        {
-          type:"Login",
-          name: "Gmail",
-          username: "abhishek.bedre@alkami.com",
-          password: 'Test@1234',
-          description: "This is gmail login details.",
-          cardType:'',
-        },
-        {
-          type:"Login",
-          name: "LIC",
-          username: "abhishek.bedre@alkami.com",
-          password: "Jane123456",
-          description: "This is gmail login details.",
-          cardType:'',
+          await showMessage("Crashed !", error.message);
+          hideLoader();
         }
-      ];
-
-      cardData = [];
-
-      creditCardValues != null ? cardData.push(...creditCardValues.data) : '';
-      debitCardValues != null ? cardData.push(...debitCardValues.data) : '';
-      netbankingsValues != null ? cardData.push(...netbankingsValues.data) : '';
-      loginsValues != null ? cardData.push(...loginsValues.data) : '';
-      
-      // Initial render
-      renderCards();
-      hideLoader();
-
+      }
+      else {
+        await showMessage('Crashed !', 'Error while loading capacitor plugins. Please contact application developer.');
+      }
     });
+
+    function onLongPress(element, callback, delay = 600, moveTolerance = 10) {
+      let timer;
+      let startX = 0;
+      let startY = 0;
+      let isTouch = false;
+      let moved = false;
+
+      const start = (e) => {
+        moved = false;
+        isTouch = e.type.startsWith('touch');
+        const point = isTouch ? e.touches[0] : e;
+        startX = point.clientX;
+        startY = point.clientY;
+
+        timer = setTimeout(() => {
+          if (!moved) {
+            callback(e);
+          }
+        }, delay);
+      };
+
+      const move = (e) => {
+        const point = isTouch ? e.touches[0] : e;
+        const deltaX = Math.abs(point.clientX - startX);
+        const deltaY = Math.abs(point.clientY - startY);
+        if (deltaX > moveTolerance || deltaY > moveTolerance) {
+          moved = true;
+          clearTimeout(timer);
+        }
+      };
+
+      const cancel = () => {
+        clearTimeout(timer);
+      };
+
+      // Mouse events
+      element.addEventListener('mousedown', start);
+      element.addEventListener('mousemove', move);
+      element.addEventListener('mouseup', cancel);
+      element.addEventListener('mouseleave', cancel);
+
+      // Touch events
+      element.addEventListener('touchstart', start, { passive: true });
+      element.addEventListener('touchmove', move, { passive: true });
+      element.addEventListener('touchend', cancel);
+      element.addEventListener('touchcancel', cancel);
+    }
 
     const hamburger = document.getElementById('hamburger');
     const sidePanel = document.getElementById('sidePanel');
@@ -512,6 +506,51 @@
         const cardEl = document.createElement('div');
         cardEl.className = `card ${cardClass}`;
         cardEl.setAttribute('onclick', 'cardClick(this)');
+
+        onLongPress(cardEl, async (ele) => {
+
+          var cardElement = ele.target.closest('.card');
+
+          var typeId = cardElement.getAttribute("type");
+          var dataId = cardElement.getAttribute("dataid");
+
+          const key = getStorageKeyFromType(parseInt(typeId));
+
+          const result = await Capacitor.Plugins.ActionSheet.showActions({
+            title: 'Delete the selected items',
+            options: [
+              {
+                title: 'Delete',
+                style: 'Destructive',
+              },
+              {
+                  title:'Cancel'
+              }
+            ],
+          });
+
+          if(result.index == 0) { 
+
+            var storedValues = await Capacitor.Plugins.Preferences.get({
+              key: key
+            });
+
+            var oldDataBasedOnKey = JSON.parse(storedValues.value); 
+
+            oldDataBasedOnKey.data = oldDataBasedOnKey.data.filter(x=>x.id !== parseInt(dataId));
+
+            await Capacitor.Plugins.Preferences.set({
+              key: key,
+              value : JSON.stringify(oldDataBasedOnKey)
+            });
+
+            await showMessage('Success !', 'Card deleted successfully.');
+
+            window.location.reload();
+          }
+
+        });
+
         let index = 0;
         switch(card.type)
         {
@@ -532,7 +571,9 @@
             break;
         }
         
-        cardEl.setAttribute('type', index);      
+        cardEl.setAttribute('type', index);
+        
+        cardEl.setAttribute('dataId', card.id);
 
         cardEl.innerHTML = `
         <div class="card-type-brand">${ card.type =='Login' ? (card.type + ' -  ' + card.name) : (card.type == 'Netbanking' ? card.type : (card.type + ' - ' + card.cardType)) }</div>
