@@ -187,8 +187,18 @@
     box-shadow: 0 4px 15px rgba(142, 36, 170, 0.6);
   }
 
+  .card.login {
+    background: linear-gradient(135deg, #914b01 0%, #ca6902 100%);
+    box-shadow: 0 4px 15px rgba(96, 125, 139, 0.6);
+  }
+
+  .card.reminder {
+    background: linear-gradient(135deg, #74022d 0%, #97023b 100%);
+    box-shadow: 0 4px 15px rgba(96, 125, 139, 0.6);
+  }
+
   .card.other {
-    background: linear-gradient(135deg, #455a64 0%, #607d8b 100%);
+    background: linear-gradient(135deg, #067c06 0%, #06be06 100%);
     box-shadow: 0 4px 15px rgba(96, 125, 139, 0.6);
   }
 
@@ -247,42 +257,41 @@
     user-select: none;
   }
 
+  /* Important details pop out */
+  .card-detail.important {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--secondary-color);
+    margin-bottom: 10px;
+    user-select: text;
+  }
+  
+  /* Floating button */
+  .floating-button {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background-color: var(--secondary-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      z-index: 1000;
+  }
 
-    /* Important details pop out */
-    .card-detail.important {
-      font-weight: 700;
-      font-size: 18px;
-      color: var(--secondary-color);
-      margin-bottom: 10px;
-      user-select: text;
-    }
-    
-    /* Floating button */
-    .floating-button {
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        background-color: var(--secondary-color);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 56px;
-        height: 56px;
-        font-size: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        z-index: 1000;
-    }
+  .floating-button:hover {
+      background-color: #0097a7;
+  }
 
-    .floating-button:hover {
-        background-color: #0097a7;
-    }
-
-  </style>
+</style>
 
 </head>
 <body>
@@ -326,7 +335,12 @@
   <script>
     var cardData = [];
     
-    function cardClick(ctrlReff){
+    function cardClick(event, ctrlReff) {
+
+      const containerTop = ctrlReff.getBoundingClientRect().top;
+      const y  = parseInt(event.pageY) - parseInt(containerTop);
+      
+      sessionStorage.yPosition = y;
       var type = ctrlReff.getAttribute("type");
       var dataId = ctrlReff.getAttribute("dataid");
       window.location.href = "add.html?id=" + dataId + "&type=" + type;
@@ -360,21 +374,29 @@
           sidePanel.classList.remove('open');
           mainContent.classList.remove('shifted');          
 
-          const [creditCardValues, debitCardValues, netbankingsValues, loginsValues] = await Promise.all([
+          const [creditCardValues, debitCardValues, netbankingsValues, loginsValues, reminderValues] = await Promise.all([
             getJSONPref("CreditCards"),
             getJSONPref("DebitCards"),
             getJSONPref("Netbankings"),
-            getJSONPref("Logins")
+            getJSONPref("Logins"),
+            getJSONPref("Reminders"),
           ]);
 
           creditCardValues?.data?.length > 0 ? cardData.push(...creditCardValues.data) : '';
           debitCardValues?.data?.length > 0 ? cardData.push(...debitCardValues.data) : '';
           netbankingsValues?.data?.length > 0 ? cardData.push(...netbankingsValues.data) : '';
           loginsValues?.data?.length > 0 ? cardData.push(...loginsValues.data) : '';
+          reminderValues?.data?.length > 0 ? cardData.push(...reminderValues.data) : '';
           
           // Initial render
           renderCards();
           hideLoader();
+
+          setTimeout(()=> {
+            if(sessionStorage.yPosition) {
+              window.scrollTo({top: parseInt(sessionStorage.yPosition), behavior: 'smooth'}) 
+            }
+          }, 200);
 
         } 
         catch(error) 
@@ -485,9 +507,8 @@
       cardsContainer.innerHTML = '';
 
       const filteredCards = cardData.filter(card => {
-        return Object.values(card).some(val =>
-        String(val).toLowerCase().includes(searchTerm)
-        );
+        if(!card) return false;
+        return Object.values(card).some(val => String(val).toLowerCase().includes(searchTerm));
       });
 
       if (filteredCards.length === 0) {
@@ -501,11 +522,12 @@
         if (card.type.toLowerCase().includes('credit')) cardClass = 'credit';
         else if (card.type.toLowerCase().includes('debit')) cardClass = 'debit';
         else if (card.type.toLowerCase().includes('netbanking')) cardClass = 'netbanking';
-        else if (card.type.toLowerCase().includes('logins')) cardClass = 'logins';
+        else if (card.type.toLowerCase().includes('login')) cardClass = 'login';
+        else if (card.type.toLowerCase().includes('reminder')) cardClass = 'reminder';
 
         const cardEl = document.createElement('div');
         cardEl.className = `card ${cardClass}`;
-        cardEl.setAttribute('onclick', 'cardClick(this)');
+        cardEl.setAttribute('onclick', 'cardClick(event, this)');
 
         onLongPress(cardEl, async (ele) => {
 
@@ -566,7 +588,7 @@
           case "Login":
             index = 3;
             break;
-          default:
+          case "Reminder":
             index = 4;
             break;
         }
@@ -576,21 +598,21 @@
         cardEl.setAttribute('dataId', card.id);
 
         cardEl.innerHTML = `
-        <div class="card-type-brand">${ card.type =='Login' ? (card.type + ' -  ' + card.name) : (card.type == 'Netbanking' ? card.type : (card.type + ' - ' + card.cardType)) }</div>
+        <div class="card-type-brand">${ card.type =='Login' ? (card.type + ' -  ' + card.name) : (card.type == 'Netbanking' ? card.type : (card.type == 'Reminder' ? card.type : (card.type + ' - ' + card.cardType))) }</div>
         ${
-          card.type == "Login" ? '' : '<div class="card-number">' + (card.type == 'Netbanking' ? card.accountNo : card.cardNo) + '</div>'
+          card.type == "Login" ? '' : '<div class="card-number">' + (card.type == 'Netbanking' ? card.accountNo : (card.type == 'Reminder' ? card.titleName : card.cardNo)) + '</div>'
         }
         <div>
           <table width="100%">
             <tr>
               <td style="text-align: left;">
-                <div class="label-small">${ card.type == 'Login' ? 'Name' : 'Card Holder'} </div>
-                <div class="card-holder-name">${card.type == 'Login' ? card.userId : card.name }</div>
+                <div class="label-small">${ card.type == 'Login' ? 'Name' : (card.type == 'Reminder' ? 'Start Date' : 'Card Holder')} </div>
+                <div class="card-holder-name">${card.type == 'Login' ? card.userId : (card.type == 'Reminder' ? card.startDate : card.name) }</div>
               </td>
             ${ card.type == 'Login' ? '' :  
               `<td>
-                <div class="label-small">Bank</div>
-                <div class="bank-name">${card.bankName}</div>	
+                <div class="label-small">${ card.type == 'Reminder' ? 'End Date' :  'Bank'}</div>
+                <div class="bank-name">${card.type == 'Reminder' ? card.endDate : card.bankName}</div>	
               </td>`
             }
             </tr>
@@ -602,6 +624,22 @@
               </td>
             </tr>` : ''
             }
+
+            ${card.type == 'Reminder' ? 
+              `<tr>
+                <td colspan="2">
+                  <div class="label-small">Reminder Date</div>
+                  <div class="bank-name">${ card.reminderDate }</div>              
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <div class="label-small">Push notification message</div>
+                  <div class="bank-name">${ card.pushNotiMessage }</div>              
+                </td>
+              </tr>`: ''
+            }
+
           </table>
         </div>
         <hr class="card-divider" />

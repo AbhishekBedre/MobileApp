@@ -196,7 +196,7 @@
           <option value="1" >Debit Card</option>
           <option value="2">Netbanking</option>
           <option value="3">Login</option>
-          <option value="4">Reminer</option>
+          <option value="4">Reminder</option>
         </select>
   
         <!-- Placeholder for dynamic inputs -->
@@ -290,6 +290,17 @@
           ${input('password', 'Password')}
           ${input('description', 'Description')}
         `;
+      } else if (itemType == '4') {
+        formFields.innerHTML = `
+          ${input('title-name', 'Title')}
+          ${dropdown('reminder-type', ['Normal','With-in range reminder'], 'Reminder Type')}
+          ${dropdown('reminder-frequency', ['None','Daily', 'Weekly', 'Monthly', 'Yearly'], 'Reminder frequency')}
+          <input type="date" id="start-date" />
+          <input type="date" id="end-date" />
+          <input type="date" id="reminder-date" />
+          ${input('push-noti-message', 'Push notification message')}
+          ${input('description', 'Description')}
+        `;
       }
 
       const today = new Date().toISOString().split('T')[0];
@@ -377,6 +388,15 @@
             document.getElementById('username').value = record.userId;
             document.getElementById('password').value = record.loginPassword;
             document.getElementById('description').value = record.description;
+          } else if(itemTypeMap[typeId] == 'Reminder') {
+            document.getElementById('title-name').value = record.titleName;
+            document.getElementById('reminder-type').value = record.reminderType;
+            document.getElementById('reminder-frequency').value = record.reminderFrequency;
+            document.getElementById('start-date').value = record.startDate;
+            document.getElementById('end-date').value = record.endDate;
+            document.getElementById('reminder-date').value = record.reminderDate;
+            document.getElementById('push-noti-message').value = record.pushNotiMessage;
+            document.getElementById('description').value = record.description;
           }
 
           const select = document.getElementById('item-type');
@@ -449,8 +469,18 @@
           var password = document.getElementById('password').value;
           var description = document.getElementById('description').value;        
         }
-        else if(itemType == '4')
+        else if(itemType == '4') {
           keyToRead = "Reminders";
+
+          var titleName = document.getElementById('title-name').value;
+          var reminderType = document.getElementById('reminder-type').value;
+          var reminderFrequency = document.getElementById('reminder-frequency').value;
+          var startDate = document.getElementById('start-date').value;
+          var endDate = document.getElementById('end-date').value;
+          var reminderDate = document.getElementById('reminder-date').value;
+          var pushNotiMessage = document.getElementById('push-noti-message').value;
+          var description = document.getElementById('description').value;
+        }
         else 
           keyToRead = "None";
 
@@ -633,6 +663,60 @@
           await Capacitor.Plugins.Preferences.set({
             key: keyToRead,
             value : JSON.stringify(loginDataBasedOnKey)
+          });
+
+        } 
+        else if (itemType == '4')
+        {
+          var reminderValues = await Capacitor.Plugins.Preferences.get({
+            key: keyToRead
+          });
+
+          var reminderDataBasedOnKey = JSON.parse(reminderValues.value); 
+
+          if(reminderDataBasedOnKey == null) {
+            reminderDataBasedOnKey = {
+              data: []
+            };
+          } 
+
+          var totalLength = reminderDataBasedOnKey.data.length ?? 0;
+          
+          var reminderJSONObject = {};
+
+          if(isUpdate == true) {
+
+            var recordToUpdate = reminderDataBasedOnKey.data.find(x => x.id === id);
+            recordToUpdate.titleName = titleName;
+            recordToUpdate.reminderType = reminderType;
+            recordToUpdate.reminderFrequency = reminderFrequency;
+            recordToUpdate.startDate = startDate;
+            recordToUpdate.endDate = endDate;
+            recordToUpdate.reminderDate = reminderDate;
+            recordToUpdate.pushNotiMessage = pushNotiMessage;
+            recordToUpdate.description = description;
+
+          } else {
+
+            reminderJSONObject = {
+              id: ++totalLength,
+              type: GetItemTypeName(itemType),
+              titleName: titleName,
+              reminderType: reminderType,
+              reminderFrequency: reminderFrequency,
+              startDate: startDate,
+              endDate: endDate,
+              reminderDate: reminderDate,
+              pushNotiMessage: pushNotiMessage,
+              description: description
+            }
+
+            reminderDataBasedOnKey.data.push(reminderJSONObject);
+          }
+
+          await Capacitor.Plugins.Preferences.set({
+            key: keyToRead,
+            value : JSON.stringify(reminderDataBasedOnKey)
           });
 
         }

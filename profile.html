@@ -182,7 +182,7 @@
 
   <script>
 
-    window.addEventListener('DOMContentLoaded', async () => {
+    window.addEventListener('load', async () => {
       
       showLoader();
 
@@ -253,10 +253,31 @@
         });
 
         // Display the photo
-        const base64Image = `data:image/jpeg;base64,${photo.base64String}`;
+        // const base64Image = `data:image/jpeg;base64,${photo.base64String}`;
+        const base64Image = photo.base64String;
+
+        // Save to application directory under "profile" folder
+        const fileName = `profile.jpeg`;
+        const filePath = `profile/${fileName}`;
+
+        await Capacitor.Plugins.Filesystem.writeFile({
+          path: filePath,
+          data: base64Image,
+          directory: 'Data',
+          recursive: true
+        });
+
+        // Read back to get a proper file URI to display
+        const fileUriResult = await Capacitor.Plugins.Filesystem.getUri({
+          path: filePath,
+          directory: 'Data'
+        });
+
+        const imageUrl = Capacitor.convertFileSrc(fileUriResult.uri);
 
         const imageElement = document.getElementById('takePictureBtn');
-        imageElement.src = base64Image;
+        imageElement.src = imageUrl + `?t=${Date.now()}`;
+
         hideLoader();
       } 
       catch (error) 
