@@ -97,10 +97,30 @@ function getReminderOccurrences(startDateStr, endDateStr, reminderDay, repeatTyp
     }
 
     if (occurrence >= startDate && occurrence <= endDate) {
-      results.push(occurrence.toISOString().split("T")[0]);
+      const formatted =
+        occurrence.getFullYear() + "-" +
+        String(occurrence.getMonth() + 1).padStart(2, "0") + "-" +
+        String(occurrence.getDate()).padStart(2, "0");
+      results.push(formatted);
     }
   }
 
   return results;
 }
 
+async function setReminder(title, message, scheduleDateTime) {
+    await Capacitor.Plugins.LocalNotifications.schedule({
+    notifications: [
+      {
+        title: title,
+        body: message,
+        id: Math.floor(Date.now() % 1000000000),
+        schedule: { 
+          at: scheduleDateTime,
+        },
+        ongoing: true
+      },
+    ],
+  });
+
+} 

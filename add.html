@@ -92,16 +92,17 @@
     }
 
     @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(40px);
-        }
+      from {
+          opacity: 0;
+          transform: translateY(40px);
+      }
 
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
     }
+
     input[type="text"], input[type="password"], input[type="number"] {
         width: 100%;
         padding: 12px 16px;
@@ -173,6 +174,10 @@
 
     input[type="date"]::-webkit-calendar-picker-indicator {
       filter: invert(1);
+    }
+
+    .labels {
+      margin-left: 10px;
     }
 
   </style>
@@ -248,8 +253,9 @@
       const input = (id, placeholder, type = 'text', forceNumberPad = false, max = '') =>
         `<input type="${type}" id="${id}" placeholder="${placeholder}" ${max ? `maxlength="${max}"` : ''} ${ forceNumberPad ? `inputmode="numeric" pattern="[0-9]*"` : '' } />`;
   
-      const dropdown = (id, options, label) => `
-        <select id="${id}" style="margin-bottom:16px;">
+      const dropdown = (id, options, label, showLabel = false, enableEvent = false) => `
+        ${ showLabel ? ('<label id="'+ id + '-label"' + ' class="labels">' + label + '</label>') : '' }
+        <select id="${id}" style="margin-bottom:16px;" ${enableEvent ? "onchange=onChangeEvent(event);" : ''}>
           ${options.map((opt, index) => `<option value="${index}">${opt}</option>`).join('')}
         </select>`;
   
@@ -268,7 +274,8 @@
           <input type="date" id="bill-date" />
           ${input('description', 'Description')}
         `;
-      } else if (itemType === '2') {
+      } 
+      else if (itemType === '2') {
         formFields.innerHTML = `
           ${input('acc-holder', 'Account Holder Name')}
           ${input('bank-name', 'Bank Name')}
@@ -283,22 +290,30 @@
           ${input('mobile-pin', 'Mobile PIN', 'text', true)}
           ${input('description', 'Description')}
         `;
-      } else if (itemType === '3') {
+      } 
+      else if (itemType === '3') {
         formFields.innerHTML = `
           ${input('login-name', 'Name')}
           ${input('username', 'Username')}
           ${input('password', 'Password')}
           ${input('description', 'Description')}
         `;
-      } else if (itemType == '4') {
+      } 
+      else if (itemType == '4') {
         formFields.innerHTML = `
+          <label id="title-label" class="labels">Title</label>
           ${input('title-name', 'Title')}
-          ${dropdown('reminder-type', ['Normal','With-in range reminder'], 'Reminder Type')}
-          ${dropdown('reminder-frequency', ['None','Daily', 'Weekly', 'Monthly', 'Yearly'], 'Reminder frequency')}
-          <input type="date" id="start-date" />
-          <input type="date" id="end-date" />
+          ${dropdown('reminder-type', ['Normal reminder','With-in range reminder'], 'Reminder type', true, true)}
+          ${dropdown('reminder-frequency', ['None','Daily', 'Weekly', 'Monthly', 'Yearly'], 'Reminder frequency', true, false)}
+          <label id="startdate-label" class="labels" style="display:none;">Start date</label>
+          <input type="date" id="start-date" style="display:none;" />
+          <label id="enddate-label" class="labels" style="display:none;">End date</label>
+          <input type="date" id="end-date" style="display:none;" />
+          <label id="reminderdate-label" class="labels">Reminder date</label>
           <input type="date" id="reminder-date" />
+          <label id="pushnotimessage-label" class="labels">Push notification message</label>
           ${input('push-noti-message', 'Push notification message')}
+          <label id="description-label" class="labels">Description</label>
           ${input('description', 'Description')}
         `;
       }
@@ -309,6 +324,27 @@
         if (billDateInput) billDateInput.value = today;
       }, 0);
 
+    }
+
+    function onChangeEvent(event) {
+      const itemType = document.getElementById('item-type').value;
+      if (itemType == '4') {
+        const reminderType = document.getElementById('reminder-type').value;
+        
+        if(parseInt(reminderType) == 1) {
+          document.getElementById('startdate-label').style.display = 'block';
+          document.getElementById('enddate-label').style.display = 'block';
+          document.getElementById('start-date').style.display = 'block';
+          document.getElementById('end-date').style.display = 'block';
+        }
+        else {
+          document.getElementById('startdate-label').style.display = 'none';
+          document.getElementById('enddate-label').style.display = 'none';
+          document.getElementById('start-date').style.display = 'none';
+          document.getElementById('end-date').style.display = 'none';
+        }
+
+      }
     }
 
     function getQueryParam(name) {
@@ -391,6 +427,7 @@
           } else if(itemTypeMap[typeId] == 'Reminder') {
             document.getElementById('title-name').value = record.titleName;
             document.getElementById('reminder-type').value = record.reminderType;
+            onChangeEvent();
             document.getElementById('reminder-frequency').value = record.reminderFrequency;
             document.getElementById('start-date').value = record.startDate;
             document.getElementById('end-date').value = record.endDate;
@@ -424,6 +461,8 @@
 
         showLoader();
 
+        var keyToRead = "CreditCards";
+
         const itemType = document.getElementById('item-type').value;
 
         if(itemType == '0' || itemType == '1') {
@@ -438,9 +477,7 @@
           var billDate = document.getElementById('bill-date').value;
           var description = document.getElementById('description').value;
         }
-
-        var keyToRead = "CreditCards";
-        // Read the older credit card using "CreditCards" key  
+  
         if(itemType == '0')
           keyToRead = "CreditCards";        
         else if(itemType == '1')
@@ -493,16 +530,9 @@
           var oldDataBasedOnKey = JSON.parse(creditDebitValues.value); 
 
           if(oldDataBasedOnKey == null) {
-            await Capacitor.Plugins.Preferences.set({
-              key: keyToRead,
-              value : '{ "data": [] }'
-            });
-
-            creditDebitValues = await Capacitor.Plugins.Preferences.get({
-              key: keyToRead
-            });
-
-            oldDataBasedOnKey = JSON.parse(creditDebitValues.value);
+            oldDataBasedOnKey = {
+              data: []
+            }
           }
 
           var totalLength = oldDataBasedOnKey?.data?.length ?? 0;
@@ -719,6 +749,9 @@
             value : JSON.stringify(reminderDataBasedOnKey)
           });
 
+          let scheduleDateTime = new Date(Date.now() + 1000 * 60 * 1);
+          await setReminder(titleName, pushNotiMessage, scheduleDateTime);
+
         }
 
         document.getElementById("dynamic-form").reset();
@@ -730,6 +763,7 @@
         window.location.href = 'home.html';
       }
       catch(ex) {
+        hideLoader();
         await showMessage('Crashed !!', ex.message);
       }
     }
