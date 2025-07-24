@@ -15,31 +15,46 @@
   <script type="text/javascript" src="js/app.js"></script>
 
   <style>
-    
+    :root {
+      --primary-color: #0288d1;
+      --secondary-color: #4fc3f7;
+      --background-color: #021f3a;
+      --card-color: #032d4d;
+      --text-color: #ffffff;
+    }
+
     * {
       box-sizing: border-box;
     }
 
-    body {
-      font-family: 'Poppins', sans-serif;
+    html, body {
       margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
       background-color: var(--background-color);
+      color: var(--text-color);
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      padding: 16px;
     }
 
     .card {
       background-color: var(--card-color);
-      width: 90%;
-      max-width: 400px;
+      width: 100%;
+      max-width: 420px;
       border-radius: 20px;
-      padding: 32px;
+      padding: 28px 20px;
       text-align: center;
       opacity: 0;
       transform: translateY(40px);
       animation: fadeInUp 0.6s ease-out forwards;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     }
 
     @keyframes fadeInUp {
@@ -50,27 +65,28 @@
     }
 
     .title {
-      font-size: 28px;
+      font-size: 26px;
       color: var(--primary-color);
       font-weight: 600;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .pin-container {
       display: flex;
       justify-content: center;
-      gap: 16px;
-      margin-bottom: 24px;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
     }
 
     .pin-box {
-      width: 70px;
-      height: 70px;
-      font-size: 36px;
+      width: 60px;
+      height: 60px;
+      font-size: 28px;
       font-weight: 700;
       text-align: center;
       border: 2px solid var(--secondary-color);
-      border-radius: 12px;
+      border-radius: 10px;
       outline: none;
       color: var(--text-color);
       background-color: #073353;
@@ -89,13 +105,13 @@
       padding: 12px 16px;
       border: 2px solid var(--secondary-color);
       border-radius: 10px;
-      font-size: 22px;
+      font-size: 18px;
       color: var(--text-color);
       background-color: #073353;
     }
 
     #mobile-field {
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .auth-button {
@@ -103,16 +119,17 @@
       color: white;
       padding: 14px;
       border: none;
-      border-radius: 28px;
-      font-size: 18px;
+      border-radius: 24px;
+      font-size: 16px;
       font-weight: 600;
       width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       transition: background 0.2s ease;
       cursor: pointer;
+      margin-top: 10px;
     }
 
     .auth-button:hover {
@@ -120,7 +137,7 @@
     }
 
     .switch-link {
-      margin-top: 20px;
+      margin-top: 16px;
       color: var(--secondary-color);
       cursor: pointer;
       text-decoration: underline;
@@ -128,10 +145,54 @@
     }
 
     .footer {
-      margin-top: 24px;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #ccc;
+    }
+
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loader-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-top: 5px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 400px) {
+      .pin-box {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+      }
+
+      .title {
+        font-size: 22px;
+      }
+
+      .auth-button {
+        font-size: 15px;
+        padding: 12px;
+      }
     }
   </style>
-
 </head>
 <body>  
 
@@ -144,24 +205,16 @@
       </div>
 
       <div class="pin-container">
-        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 0)" id="pin0" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
-        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 1)" id="pin1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
-        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 2)" id="pin2" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
-        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 3)" id="pin3" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 0)" id="pin0" inputmode="numeric" pattern="[0-9]*">
+        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 1)" id="pin1" inputmode="numeric" pattern="[0-9]*">
+        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 2)" id="pin2" inputmode="numeric" pattern="[0-9]*">
+        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 3)" id="pin3" inputmode="numeric" pattern="[0-9]*">
       </div>
 
       <button class="auth-button" type="button" id="auth-button" onclick="handleSubmit();">
         <span id="submit-text">Login</span>
         <i class="material-icons">lock_open</i>
       </button>
-      <!-- <button class="auth-button" type="button" id="takePictureBtn">
-        <span id="submit-text">Camera</span>
-        <i class="material-icons">lock_open</i>
-      </button>
-      <button class="auth-button" type="button" id="preferences">
-        <span id="submit-text">Save Preferences</span>
-        <i class="material-icons">lock_open</i>
-      </button> -->
     </form>
 
     <div class="switch-link" onclick="toggleMode()">
@@ -169,11 +222,8 @@
     </div>
 
     <div class="footer">© 2025 SecureVault</div>
-
-    <!-- <img id="photo" style="width: 100%; margin-top: 10px;" /> -->
   </div>
-    
-  <!-- Loader -->
+
   <div id="loaderOverlay" class="loader-overlay">
     <div class="loader-spinner"></div>
   </div>
@@ -183,19 +233,15 @@
 
     function toggleMode() {
       isCreating = !isCreating;
-	    document.getElementById("title").textContent = isCreating ? "Create Account" : "Secure Vaule";
+      document.getElementById("title").textContent = isCreating ? "Create Account" : "Secure Vault";
       document.getElementById("switch-text").textContent = isCreating ? "Already have an account? Login" : "Don't have an account? Create one";
       document.getElementById("submit-text").textContent = isCreating ? "Register" : "Login";
       document.getElementById("mobile-field").style.display = isCreating ? "block" : "none";
       if (isCreating) {
         document.getElementById("new-mobile").focus();
       } else {
-        clearMobileInput();
+        document.getElementById("new-mobile").value = '';
       }
-    }
-
-    function clearMobileInput() {
-      document.getElementById("new-mobile").value = '';
     }
 
     function moveFocus(input, index) {
@@ -209,53 +255,48 @@
       }
     }
 
+    function showLoader() {
+      document.getElementById("loaderOverlay").style.display = "flex";
+    }
+
+    function hideLoader() {
+      document.getElementById("loaderOverlay").style.display = "none";
+    }
+
+    async function showMessage(title, msg) {
+      alert(`${title}\n${msg}`);
+    }
+
     async function handleSubmit() {
       showLoader();
 
       const pin = [...Array(4).keys()].map(i => document.getElementById(`pin${i}`).value).join('');
       if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
         hideLoader();
-        await showMessage('Invalid !', 'Please enter a valid 4-digit PIN.');
+        await showMessage('Invalid!', 'Please enter a valid 4-digit PIN.');
         return;
       }
 
       if (isCreating) {
-        showLoader();
-
         const mobile = document.getElementById("new-mobile").value.trim();
         if (!mobile || !/^\d{10}$/.test(mobile)) {
           hideLoader();
-
-          await showMessage('Invalid !', 'Please enter a valid 10-digit mobile number.');
+          await showMessage('Invalid!', 'Please enter a valid 10-digit mobile number.');
           return;
         }
 
-        var authObject = {
-          mobileNo: mobile,
-          pin: pin
-        }
-
-        // Save Mobile and PIN. 
-        var authValues = await Capacitor.Plugins.Preferences.set({
-          key: "Auth",
-          value: JSON.stringify(authObject)
-        });
+        var authObject = { mobileNo: mobile, pin: pin };
+        await Capacitor.Plugins.Preferences.set({ key: "Auth", value: JSON.stringify(authObject) });
 
         document.getElementById("auth-form").reset();
-
         hideLoader();
-
-        await showMessage('Success !', 'Account creaed successfully.');
+        await showMessage('Success!', 'Account created successfully.');
 
       } else {
-        
-        var authData = await Capacitor.Plugins.Preferences.get({
-          key: "Auth"
-        });
+        var authData = await Capacitor.Plugins.Preferences.get({ key: "Auth" });
+        var authValues = JSON.parse(authData.value);
 
-        var authValues = JSON.parse(authData.value); 
-        
-        if(authValues?.pin == pin) {
+        if (authValues?.pin == pin) {
           sessionStorage.isAuthenticated = true;
           window.location.href = "home.html";
         } else {
@@ -265,10 +306,8 @@
         }
       }
 
-      // Clear PIN fields
       for (let i = 0; i < 4; i++) document.getElementById(`pin${i}`).value = '';
     }
   </script>
-
 </body>
 </html>
