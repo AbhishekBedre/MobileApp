@@ -144,10 +144,10 @@
       </div>
 
       <div class="pin-container">
-        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 0)" id="pin0" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
-        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 1)" id="pin1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
-        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 2)" id="pin2" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
-        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 3)" id="pin3" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 0)" onkeydown="handleBackspace(event, 0)" id="pin0" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 1)" onkeydown="handleBackspace(event, 1)" id="pin1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 2)" onkeydown="handleBackspace(event, 2)" id="pin2" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+        <input type="password" maxlength="1" class="pin-box" oninput="moveFocus(this, 3)" onkeydown="handleBackspace(event, 3)" id="pin3" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
       </div>
 
       <button class="auth-button" type="button" id="auth-button" onclick="handleSubmit();">
@@ -199,15 +199,40 @@
     }
 
     function moveFocus(input, index) {
-      input.value = input.value.replace(/\D/, '');
-      if (input.value) {
-        if (index < 3) {
-          document.getElementById(`pin${index + 1}`).focus();
-        } else {
-          document.getElementById("auth-button").focus();
+      input.value = input.value.replace(/\D/, ''); // digits only
+      if (input.value && index < 3) {
+        document.getElementById(`pin${index + 1}`).focus();
+      } else if (index === 3) {
+        document.getElementById("auth-button").focus();
+      }
+    }
+
+
+    function handleBackspace(event, index) {
+      const input = event.target;
+      const value = input.value;
+      
+      // Auto move to next box if a digit is entered
+      if (value && index < 3) {
+        const next = document.getElementById(`pin${index + 1}`);
+        next.focus();
+      }
+
+      // If backspace is pressed
+      if (event.key === "Backspace") {
+        // If current box has value, just clear it
+        if (value) {
+          input.value = '';
+        } 
+        // If empty, move to previous box
+        else if (index > 0) {
+          const prev = document.getElementById(`pin${index - 1}`);
+          prev.focus();
+          prev.value = '';
         }
       }
     }
+
 
     async function handleSubmit() {
       showLoader();

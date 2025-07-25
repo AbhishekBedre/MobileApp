@@ -713,10 +713,11 @@
           var totalLength = reminderDataBasedOnKey.data.length ?? 0;
           
           var reminderJSONObject = {};
+          var parentId  = id;
+          var recordToUpdate = reminderDataBasedOnKey.data.find(x => x.id === id);
 
           if(isUpdate == true) {
 
-            var recordToUpdate = reminderDataBasedOnKey.data.find(x => x.id === id);
             recordToUpdate.titleName = titleName;
             recordToUpdate.reminderType = reminderType;
             recordToUpdate.reminderFrequency = reminderFrequency;
@@ -741,6 +742,8 @@
               description: description
             }
 
+            parentId = reminderJSONObject.id;
+
             reminderDataBasedOnKey.data.push(reminderJSONObject);
           }
 
@@ -749,9 +752,34 @@
             value : JSON.stringify(reminderDataBasedOnKey)
           });
 
-          let scheduleDateTime = new Date(Date.now() + 1000 * 60 * 1);
-          await setReminder(titleName, pushNotiMessage, scheduleDateTime);
+          if(isUpdate == true) {
+            // Cancel existing notificaitons and create new notifications
+            let result = await getScheduledNotifications();
 
+            let notificationsToCancel = result.notifications.filter(x=>x.extra?.parentId == id);
+
+            if(notificationsToCancel?.length > 0) {
+              await cancelScheduledNotifications(notificationsToCancel.map(x => ({ id: x.id})));
+            }
+            else 
+              console.log("There is no existing notification for parentId: " + id);
+            
+          }
+          
+          var datesToSchedule = getReminderOccurrences(startDate, 
+            endDate, reminderDate, reminderFrequency.toLowerCase());
+
+          for(let i = 0; i < datesToSchedule.length; i++) {
+            
+            let localDate = datesToSchedule[i];
+            let scheduleDateTime = new Date(localDate);
+            scheduleDateTime.setHours(15, 30, 0, 0);
+            let extra = {
+              parentId: parentId
+            }
+
+            await setReminder(titleName, pushNotiMessage, scheduleDateTime, extra);
+          }
         }
 
         document.getElementById("dynamic-form").reset();

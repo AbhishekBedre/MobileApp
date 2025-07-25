@@ -44,13 +44,14 @@ function hideLoader() {
 }
 
 // Monthly reminder on 31st, fallback to 30/28 if needed
-//console.log(getReminderOccurrences("2025-01-01", "2025-06-30", 31, "monthly"));
+//console.log(getReminderOccurrences("2025-01-01", "2025-06-30", "2025-07-20", "monthly"));
 // Daily 
 //console.log(getReminderOccurrences("2025-01-01", "2025-01-05", null, "daily"));
 // Weekly 
 //console.log(getReminderOccurrences("2025-01-01", "2025-01-29", null, "weekly"));
 
-function getReminderOccurrences(startDateStr, endDateStr, reminderDay, repeatType) {
+function getReminderOccurrences(startDateStr, endDateStr, reminderDate, repeatType) {
+  const reminderDay = (new Date(reminderDate)).getDate();
   const startDate = new Date(startDateStr);
   const endDate = new Date(endDateStr);
   const results = [];
@@ -108,7 +109,7 @@ function getReminderOccurrences(startDateStr, endDateStr, reminderDay, repeatTyp
   return results;
 }
 
-async function setReminder(title, message, scheduleDateTime) {
+async function setReminder(title, message, scheduleDateTime, extra) {
     await Capacitor.Plugins.LocalNotifications.schedule({
     notifications: [
       {
@@ -118,9 +119,24 @@ async function setReminder(title, message, scheduleDateTime) {
         schedule: { 
           at: scheduleDateTime,
         },
+        extra: extra,
         ongoing: true
       },
     ],
   });
 
 } 
+
+async function getScheduledNotifications() {
+  const result = await Capacitor.Plugins.LocalNotifications.getPending();
+  console.log("getScheduledNotifications: " + result?.length);
+  return result;
+}
+
+//cancelScheduledNotifications([{id: 1}, {id: 2}])
+async function cancelScheduledNotifications(notificationIds) {
+  await Capacitor.Plugins.LocalNotifications.cancel({
+    notifications: notificationIds
+  });
+  console.log("cancelScheduledNotifications: " + JSON.stringify(notificationIds));
+}
