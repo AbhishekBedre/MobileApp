@@ -13,13 +13,30 @@
   <link rel="stylesheet" href="css/common.css" />
   <script type="text/javascript" src="js/app.js"></script>
 
-  <style>    
+  <style>
+    :root {
+      --primary-color: #0288d1;
+      --secondary-color: #4fc3f7;
+      --background-color: #021f3a;
+      --card-color: #032d4d;
+      --text-color: #ffffff;
+      --header-height: 70px;
+    }
 
     * {
       box-sizing: border-box;
     }
 
-    /* Header */
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      height: 100%;
+      width: 100%;
+    }
+
     header {
       position: fixed;
       top: 0;
@@ -31,126 +48,157 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--primary-color);
       font-weight: 600;
       font-size: 20px;
       z-index: 1001;
-      user-select: none;
-      padding: 30px 10px 0 10px;
+      padding-top: 10px;
     }
 
-    /* Hamburger */
     #hamburger {
       position: fixed;
-      top: 45px;
+      top: 18px;
       left: 16px;
       cursor: pointer;
       color: var(--primary-color);
       font-size: 28px;
       z-index: 1100;
-      transition: color 0.2s ease;
     }
 
-    #hamburger:hover {
-      color: var(--secondary-color);
-      text-decoration:none;
-    }
-
-    /* Main content wrapper */
     main {
       margin-top: var(--header-height);
-      padding: 24px 16px;
-      transition: margin-left 0.3s ease;
-      margin-left: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
     }
 
-    main.shifted {
-      margin-left: var(--sidepanel-width);
-    }
-    /* Cards Grid */
-    .cards-container {
-      max-width: 960px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-    }
-
-    /* Card */
     .card {
       background-color: var(--card-color);
+      width: 100%;
+      max-width: 480px;
       border-radius: 20px;
-      padding: 20px 24px;
-      cursor: default;
-      display: flex;
-      flex-direction: column;
-      transition: background-color 0.2s ease;
-      box-shadow: none;
-    }
-
-    .card:hover {
-      background-color: #154a73;
+      padding: 24px 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      animation: fadeInUp 0.6s ease-out forwards;
     }
 
     @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .profile-img {
-        width: 120px;
-        height: 120px;
-        margin: 20px auto;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid var(--secondary-color);
-        margin-bottom: 24px;
+      width: 120px;
+      height: 120px;
+      margin: 10px auto 24px auto;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--secondary-color);
+      display: block;
+      cursor: pointer;
     }
 
-    input[type="text"], input[type="email"], input[type="number"] {
-        width: 100%;
-        padding: 12px 16px;
-        border: 2px solid var(--secondary-color);
-        border-radius: 10px;
-        font-size: 18px;
-        color: var(--text-color);
-        background-color: #073353;
-        margin-bottom: 16px;
+    input[type="text"],
+    input[type="email"],
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--secondary-color);
+      border-radius: 10px;
+      font-size: 18px;
+      color: var(--text-color);
+      background-color: #073353;
+      margin-bottom: 16px;
     }
 
     .save-button {
-        background-color: var(--primary-color);
-        color: white;
-        padding: 14px;
-        border: none;
-        border-radius: 28px;
-        font-size: 18px;
-        font-weight: 600;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        transition: background 0.2s ease;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 14px;
+      border: none;
+      border-radius: 28px;
+      font-size: 18px;
+      font-weight: 600;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      margin-top: 10px;
     }
 
     .save-button:hover {
-        background-color: #0277bd;
+      background-color: #0277bd;
     }
 
+    .footer {
+      margin-top: 20px;
+      font-size: 13px;
+      text-align: center;
+      color: #ccc;
+    }
+
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loader-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-top: 5px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 400px) {
+      .profile-img {
+        width: 90px;
+        height: 90px;
+      }
+
+      input[type="text"],
+      input[type="email"],
+      input[type="number"] {
+        font-size: 16px;
+      }
+
+      .save-button {
+        font-size: 16px;
+        padding: 12px;
+      }
+
+      header {
+        font-size: 18px;
+      }
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <div id="hamburger" title="Menu" tabindex="0" role="button" aria-label="Toggle menu" " onclick="goBack()">
+    <div id="hamburger" title="Back" onclick="goBack()">
       <span class="material-icons">arrow_back</span>
     </div>
     Profile
@@ -158,62 +206,50 @@
 
   <main id="mainContent">
     <div class="card">
-      <img src="https://placehold.co/120X120" alt="Profile Image" id="takePictureBtn" class="profile-img" />
+      <img src="https://placehold.co/120x120" alt="Profile Image" id="takePictureBtn" class="profile-img" />
 
       <form onsubmit="event.preventDefault(); saveProfile();">
-          <input type="text" id="name" placeholder="Full Name" />
-          <input type="email" id="email" placeholder="Email" />
-          <input type="number" id="mobile" placeholder="Mobile Number" maxlength="10" />
-
-          <button class="save-button" type="submit">
-              <span>Save</span>
-              <i class="material-icons">save</i>
-          </button>
-      </form>        
+        <input type="text" id="name" placeholder="Full Name" />
+        <input type="email" id="email" placeholder="Email" />
+        <input type="number" id="mobile" placeholder="Mobile Number" maxlength="10" />
+        <button class="save-button" type="submit">
+          <span>Save</span>
+          <i class="material-icons">save</i>
+        </button>
+      </form>
 
       <div class="footer">© 2025 SecureVault</div>
     </div>
   </main>
 
-  <!-- Loader -->
   <div id="loaderOverlay" class="loader-overlay">
     <div class="loader-spinner"></div>
   </div>
 
   <script>
-
     window.addEventListener('load', async () => {
-      
       showLoader();
 
-      if(sessionStorage.isAuthenticated == undefined || sessionStorage.isAuthenticated == false) {
+      if (!sessionStorage.isAuthenticated) {
         logout('index.html');
       }
 
-      var profile = await Capacitor.Plugins.Preferences.get({
-        key: "Profile"
-      });
-
       try {
-        var profileObj = JSON.parse(profile.value);
+        const profile = await Capacitor.Plugins.Preferences.get({ key: "Profile" });
+        const profileObj = JSON.parse(profile.value);
 
-        if(profileObj != null) 
-        {
+        if (profileObj) {
           document.getElementById('name').value = profileObj.name;
           document.getElementById('email').value = profileObj.email;
           document.getElementById('mobile').value = profileObj.mobile;
-          const imageElement = document.getElementById('takePictureBtn');
-          imageElement.src = profileObj.image;
+          document.getElementById('takePictureBtn').src = profileObj.image;
         }
 
         hideLoader();
-      } 
-      catch(ex) 
-      {
+      } catch (ex) {
         hideLoader();
-        await showMessage('Oops !', 'Error while profile loading. \n' + ex.message);
+        await showMessage('Oops!', 'Error loading profile. \n' + ex.message);
       }
-
     });
 
     async function saveProfile() {
@@ -222,14 +258,9 @@
       const name = document.getElementById('name').value;
       const email = document.getElementById('email').value;
       const mobile = document.getElementById('mobile').value;
-      const imageElement = document.getElementById('takePictureBtn');
+      const image = document.getElementById('takePictureBtn').src;
 
-      var profileObj = {
-        name: name,
-        email: email,
-        mobile: mobile,
-        image: imageElement.src
-      };
+      const profileObj = { name, email, mobile, image };
 
       await Capacitor.Plugins.Preferences.set({
         key: "Profile",
@@ -237,8 +268,7 @@
       });
 
       hideLoader();
-
-      await showMessage('Success !', 'Profile saved successfully.');
+      await showMessage('Success!', 'Profile saved successfully.');
     }
 
     document.getElementById('takePictureBtn').addEventListener('click', async () => {
@@ -246,47 +276,57 @@
 
       try {
         const photo = await Capacitor.Plugins.Camera.getPhoto({
-            quality: 100,
-            allowEditing: false,
-            resultType: 'Base64',  // You can also use Base64 or Uri
-            source: 'CAMERA'
+          quality: 100,
+          allowEditing: false,
+          resultType: 'Base64',
+          source: 'CAMERA'
         });
 
-        // Display the photo
-        // const base64Image = `data:image/jpeg;base64,${photo.base64String}`;
-        const base64Image = photo.base64String;
-
-        // Save to application directory under "profile" folder
         const fileName = `profile.jpeg`;
         const filePath = `profile/${fileName}`;
 
         await Capacitor.Plugins.Filesystem.writeFile({
           path: filePath,
-          data: base64Image,
+          data: photo.base64String,
           directory: 'Data',
           recursive: true
         });
 
-        // Read back to get a proper file URI to display
         const fileUriResult = await Capacitor.Plugins.Filesystem.getUri({
           path: filePath,
           directory: 'Data'
         });
 
         const imageUrl = Capacitor.convertFileSrc(fileUriResult.uri);
-
-        const imageElement = document.getElementById('takePictureBtn');
-        imageElement.src = imageUrl + `?t=${Date.now()}`;
+        document.getElementById('takePictureBtn').src = imageUrl + `?t=${Date.now()}`;
 
         hideLoader();
-      } 
-      catch (error) 
-      {
+      } catch (error) {
         hideLoader();
-        await showMessage('App crashed !', 'Camera error:', error.message);
+        await showMessage('App crashed!', 'Camera error: ' + error.message);
       }
     });
 
+    function goBack() {
+      window.history.back();
+    }
+
+    function showLoader() {
+      document.getElementById("loaderOverlay").style.display = "flex";
+    }
+
+    function hideLoader() {
+      document.getElementById("loaderOverlay").style.display = "none";
+    }
+
+    async function showMessage(title, msg) {
+      alert(`${title}\n${msg}`);
+    }
+
+    function logout(url) {
+      sessionStorage.clear();
+      window.location.href = url;
+    }
   </script>
 </body>
 </html>
