@@ -65,18 +65,18 @@ function getReminderOccurrences(startDateStr, endDateStr, reminderDate, repeatTy
 
     let occurrence = null;
 
-    switch (repeatType.toLowerCase()) {
-      case "daily":
+    switch (repeatType) {
+      case "1":
         occurrence = new Date(current);
         current.setDate(current.getDate() + 1); // Next day
         break;
 
-      case "weekly":
+      case "2":
         occurrence = new Date(current);
         current.setDate(current.getDate() + 7); // Next week
         break;
 
-      case "monthly":
+      case "3":
         // Handle reminderDay fallback (e.g., 31 → 30/28)
         const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
         const validDay = Math.min(reminderDay, lastDayOfMonth);
@@ -84,7 +84,7 @@ function getReminderOccurrences(startDateStr, endDateStr, reminderDate, repeatTy
         current.setMonth(current.getMonth() + 1); // Next month
         break;
 
-      case "yearly":
+      case "4":
         // Use reminderDay and current month
         const lastDayOfThisMonth = new Date(year, month + 1, 0).getDate();
         const validYearlyDay = Math.min(reminderDay, lastDayOfThisMonth);
@@ -139,4 +139,65 @@ async function cancelScheduledNotifications(notificationIds) {
     notifications: notificationIds
   });
   console.log("cancelScheduledNotifications: " + JSON.stringify(notificationIds));
+}
+
+function formatCardNumber(cardNumber) {
+  // Remove all non-digit characters first
+  const cleaned = cardNumber.replace(/\D/g, '');
+
+  // Insert space after every 4 digits
+  return cleaned.replace(/(.{4})/g, '$1 ').trim();
+}
+
+function maskLastSixChars(input) {
+  if (input.length <= 6) {
+    return '*'.repeat(input.length); // mask all if string is 6 or less
+  }
+
+  const visiblePart = input.slice(0, -6);
+  const maskedPart = '*'.repeat(6);
+  return visiblePart + maskedPart;
+}
+
+async function exportData() {
+
+  var cardData = [];
+
+  const [creditCardValues, debitCardValues, netbankingsValues, loginsValues, reminderValues] = await Promise.all([
+    getJSONPref("CreditCards"),
+    getJSONPref("DebitCards"),
+    getJSONPref("Netbankings"),
+    getJSONPref("Logins"),
+    getJSONPref("Reminders"),
+  ]);
+
+  creditCardValues?.data?.length > 0 ? cardData.push(...creditCardValues.data) : '';
+  debitCardValues?.data?.length > 0 ? cardData.push(...debitCardValues.data) : '';
+  netbankingsValues?.data?.length > 0 ? cardData.push(...netbankingsValues.data) : '';
+  loginsValues?.data?.length > 0 ? cardData.push(...loginsValues.data) : '';
+  reminderValues?.data?.length > 0 ? cardData.push(...reminderValues.data) : '';
+
+  await writeBackupFile(cardData);
+}
+
+async function writeBackupFile(dataArray) {
+  try {
+    // Convert array to JSON string
+    const jsonData = JSON.stringify(dataArray, null, 2);
+
+    // Define path and file options
+    const filePath = 'VaultBackup/backup.json';
+
+    await Capacitor.Plugins.Filesystem.writeFile({
+      path: filePath,
+      data: jsonData,
+      directory: 'Documents', // Public documents folder
+      recursive: true // Ensures folders like VaultBackup are created if not present
+    });
+
+    await showMessage('BINGO !!!!', '✅ Backup completed successfully! \n\nThe backup file has been saved as plain text (unsecured JSON format). \n\n⚠️ Warning: This file contains sensitive data and is not encrypted. Do NOT store it permanently on your device, as it can be easily accessed and misused by others. \n\nFor your safety, transfer it to a secure location and delete it from your phone immediately if not needed.');
+
+  } catch (error) {
+    await showMessage('Backup Failed', error.message);
+  }
 }

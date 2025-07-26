@@ -540,7 +540,7 @@
           var jsonObject  = {};
 
           if(isUpdate == true) {
-            var recordToUpdate = oldNetbankingDataBasedOnKey.data.find(x => x.id === id);
+            var recordToUpdate = oldDataBasedOnKey.data.find(x => x.id === id);
             recordToUpdate.cardType = GetCardTypeName(cardType);
             recordToUpdate.name = cardHolderName;
             recordToUpdate.bankName = bankName;
@@ -762,23 +762,28 @@
               await cancelScheduledNotifications(notificationsToCancel.map(x => ({ id: x.id})));
             }
             else 
-              console.log("There is no existing notification for parentId: " + id);
-            
+              console.log("There is no existing notification for parentId: " + id);            
           }
           
           var datesToSchedule = getReminderOccurrences(startDate, 
-            endDate, reminderDate, reminderFrequency.toLowerCase());
+            endDate, reminderDate, reminderFrequency);  
 
           for(let i = 0; i < datesToSchedule.length; i++) {
             
-            let localDate = datesToSchedule[i];
-            let scheduleDateTime = new Date(localDate);
-            scheduleDateTime.setHours(15, 30, 0, 0);
-            let extra = {
-              parentId: parentId
-            }
+            let todayDate = new Date();
 
-            await setReminder(titleName, pushNotiMessage, scheduleDateTime, extra);
+            let localDate = datesToSchedule[i];
+            let scheduleDateTime = new Date(localDate);            
+            scheduleDateTime.setHours(15, 30, 0, 0);
+
+            if(todayDate < scheduleDateTime) {
+
+              let extra = {
+                parentId: parentId
+              }
+
+              await setReminder(titleName, pushNotiMessage, scheduleDateTime, extra);
+            }
           }
         }
 

@@ -306,7 +306,7 @@
   <nav id="sidePanel" aria-label="Main menu">
     <a href="home.html" class="active" tabindex="0">Home</a>
     <a href="profile.html" tabindex="0">Profile</a>
-    <a href="#" tabindex="0">Export</a>
+    <a href="#" onclick="javascript: exportData()" tabindex="0">Export</a>
     <a href="changepass.html" tabindex="0">Reset Password</a>
     <a href="setting.html" tabindex="0">Settings</a>
     <a href="index.html" tabindex="0">Logout</a>
@@ -600,7 +600,7 @@
         cardEl.innerHTML = `
         <div class="card-type-brand">${ card.type =='Login' ? (card.type + ' -  ' + card.name) : (card.type == 'Netbanking' ? card.type : (card.type == 'Reminder' ? card.type : (card.type + ' - ' + card.cardType))) }</div>
         ${
-          card.type == "Login" ? '' : '<div class="card-number">' + (card.type == 'Netbanking' ? card.accountNo : (card.type == 'Reminder' ? card.titleName : card.cardNo)) + '</div>'
+          card.type == "Login" ? '' : '<div class="card-number">' + (card.type == 'Netbanking' ? card.accountNo : (card.type == 'Reminder' ? card.titleName : formatCardNumber(card.cardNo))) + '</div>'
         }
         <div>
           <table width="100%">
@@ -620,7 +620,7 @@
             `<tr>
               <td colspan="2">
                 <div class="label-small">Password</div>
-                <div class="bank-name">${ card.loginPassword }</div>              
+                <div class="bank-name">${ maskLastSixChars(card.loginPassword) }</div>              
               </td>
             </tr>` : ''
             }

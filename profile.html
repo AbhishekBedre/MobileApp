@@ -14,27 +14,15 @@
   <script type="text/javascript" src="js/app.js"></script>
 
   <style>
-    :root {
-      --primary-color: #0288d1;
-      --secondary-color: #4fc3f7;
-      --background-color: #021f3a;
-      --card-color: #032d4d;
-      --text-color: #ffffff;
-      --header-height: 70px;
-    }
-
+    
     * {
       box-sizing: border-box;
     }
 
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
       font-family: 'Poppins', sans-serif;
-      background-color: var(--background-color);
-      color: var(--text-color);
-      height: 100%;
-      width: 100%;
+      background-color: var(--background-color, #001f3f);
     }
 
     header {
@@ -48,20 +36,29 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      color: var(--primary-color);
       font-weight: 600;
       font-size: 20px;
       z-index: 1001;
-      padding-top: 10px;
+      user-select: none;
+      padding-top: 30px;
     }
 
     #hamburger {
       position: fixed;
-      top: 18px;
+      top: calc(var(--header-height) / 2 - 14px);
       left: 16px;
       cursor: pointer;
       color: var(--primary-color);
       font-size: 28px;
       z-index: 1100;
+      transition: color 0.2s ease;
+      padding-top:10px;
+    }
+
+    #hamburger:hover {
+      color: var(--secondary-color);
+      text-decoration: none;
     }
 
     main {
@@ -70,6 +67,7 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
+      overflow-x: hidden;
     }
 
     .card {
@@ -80,6 +78,7 @@
       padding: 24px 20px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
       animation: fadeInUp 0.6s ease-out forwards;
+      overflow: hidden;
     }
 
     @keyframes fadeInUp {
@@ -279,7 +278,7 @@
           quality: 100,
           allowEditing: false,
           resultType: 'Base64',
-          source: 'CAMERA'
+          source: 'PROMPT'
         });
 
         const fileName = `profile.jpeg`;
@@ -306,27 +305,6 @@
         await showMessage('App crashed!', 'Camera error: ' + error.message);
       }
     });
-
-    function goBack() {
-      window.history.back();
-    }
-
-    function showLoader() {
-      document.getElementById("loaderOverlay").style.display = "flex";
-    }
-
-    function hideLoader() {
-      document.getElementById("loaderOverlay").style.display = "none";
-    }
-
-    async function showMessage(title, msg) {
-      alert(`${title}\n${msg}`);
-    }
-
-    function logout(url) {
-      sessionStorage.clear();
-      window.location.href = url;
-    }
   </script>
 </body>
 </html>
