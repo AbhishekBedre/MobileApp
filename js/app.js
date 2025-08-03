@@ -106,7 +106,15 @@ function getReminderOccurrences(startDateStr, endDateStr, reminderDate, repeatTy
     }
   }
 
-  return results;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // normalize time to 00:00:00
+
+  const futureDates = results.filter(dateStr => {
+    const date = new Date(dateStr);
+    return date >= today;
+  });
+
+  return futureDates;
 }
 
 async function setReminder(title, message, scheduleDateTime, extra) {
@@ -118,6 +126,7 @@ async function setReminder(title, message, scheduleDateTime, extra) {
         id: Math.floor(Date.now() % 1000000000),
         schedule: { 
           at: scheduleDateTime,
+          allowWhileIdle: true
         },
         extra: extra,
         ongoing: true
@@ -150,7 +159,7 @@ function formatCardNumber(cardNumber) {
 }
 
 function maskLastSixChars(input) {
-  if (input.length <= 6) {
+  if (input.length <= 8) {
     return '*'.repeat(input.length); // mask all if string is 6 or less
   }
 

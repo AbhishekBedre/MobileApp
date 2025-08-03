@@ -756,7 +756,7 @@
             // Cancel existing notificaitons and create new notifications
             let result = await getScheduledNotifications();
 
-            let notificationsToCancel = result.notifications.filter(x=>x.extra?.parentId == id);
+            let notificationsToCancel = result.notifications.filter(x => x.extra?.parentId == id);
 
             if(notificationsToCancel?.length > 0) {
               await cancelScheduledNotifications(notificationsToCancel.map(x => ({ id: x.id})));
@@ -773,17 +773,17 @@
             let todayDate = new Date();
 
             let localDate = datesToSchedule[i];
-            let scheduleDateTime = new Date(localDate);            
-            scheduleDateTime.setHours(15, 30, 0, 0);
+            var scheduleDateTime = new Date(localDate);            
+            scheduleDateTime.setHours(20, 25, 0);
 
-            if(todayDate < scheduleDateTime) {
+            //if(todayDate < scheduleDateTime) {
 
               let extra = {
                 parentId: parentId
               }
 
               await setReminder(titleName, pushNotiMessage, scheduleDateTime, extra);
-            }
+            //}
           }
         }
 

@@ -222,8 +222,8 @@
   }
 
   .card-number {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 27px;
+    font-weight: 800;
     letter-spacing: 3px;
     margin-bottom: 18px;
     user-select: text;
@@ -334,6 +334,7 @@
 
   <script>
     var cardData = [];
+    const searchInput = document.getElementById('searchInput');
     
     function cardClick(event, ctrlReff) {
 
@@ -393,6 +394,15 @@
           hideLoader();
 
           setTimeout(()=> {
+
+            if(searchInput.value) {
+              const event = new Event('input', {
+                bubbles: true,
+                cancelable: true,
+              });
+              searchInput.dispatchEvent(event);
+            }
+
             if(sessionStorage.yPosition) {
               window.scrollTo({top: parseInt(sessionStorage.yPosition), behavior: 'smooth'}) 
             }
@@ -500,7 +510,6 @@
     });
 
     const cardsContainer = document.getElementById('cardsContainer');
-    const searchInput = document.getElementById('searchInput');
 
     function renderCards(filter = '') {
       const searchTerm = filter.toLowerCase();
@@ -600,7 +609,7 @@
         cardEl.innerHTML = `
         <div class="card-type-brand">${ card.type =='Login' ? (card.type + ' -  ' + card.name) : (card.type == 'Netbanking' ? card.type : (card.type == 'Reminder' ? card.type : (card.type + ' - ' + card.cardType))) }</div>
         ${
-          card.type == "Login" ? '' : '<div class="card-number">' + (card.type == 'Netbanking' ? card.accountNo : (card.type == 'Reminder' ? card.titleName : formatCardNumber(card.cardNo))) + '</div>'
+          card.type == "Login" ? '' : '<div class="card-number">' + (card.type == 'Netbanking' ? formatCardNumber(card.accountNo) : (card.type == 'Reminder' ? card.titleName : formatCardNumber(card.cardNo))) + '</div>'
         }
         <div>
           <table width="100%">
